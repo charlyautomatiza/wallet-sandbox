@@ -11,14 +11,15 @@ import { useRouter } from "next/navigation"
 import { use } from "react"
 
 export default function TransferConfirm({ params }: { params: { id: string } | Promise<{ id: string }> }) {
-  const router = useRouter()
-  const contact = useSelector((state: RootState) => state.transfer.contacts.find((c) => c.id === params.id))
-  const amount = useSelector((state: RootState) => state.transfer.amount)
-  const [state, formAction, isPending] = useActionState(handleTransfer, null)
-
-  // Handle both Promise and regular object cases
+  // Handle both Promise and regular object cases - MOVE THIS TO THE TOP
   const resolvedParams = params instanceof Promise ? use(params) : params
   const { id } = resolvedParams
+
+  const router = useRouter()
+  // Use the resolved id here instead of params.id
+  const contact = useSelector((state: RootState) => state.transfer.contacts.find((c) => c.id === id))
+  const amount = useSelector((state: RootState) => state.transfer.amount)
+  const [state, formAction, isPending] = useActionState(handleTransfer, null)
 
   // Handle successful transfer
   useEffect(() => {
