@@ -25,4 +25,3 @@ export async function handleTransfer(prevState: any, formData: FormData) {
     return { error: "Failed to process transfer" }
   }
 }
-

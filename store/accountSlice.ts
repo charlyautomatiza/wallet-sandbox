@@ -39,4 +39,3 @@ export const accountSlice = createSlice({
 
 export const { setCurrency, updateBalance } = accountSlice.actions
 export const accountReducer = accountSlice.reducer
-

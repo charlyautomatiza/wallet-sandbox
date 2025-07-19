@@ -63,4 +63,3 @@ export default function TransferAmount({ params }: { params: { id: string } }) {
     </div>
   )
 }
-

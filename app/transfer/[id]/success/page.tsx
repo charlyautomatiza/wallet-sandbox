@@ -50,4 +50,3 @@ export default function TransferSuccess({ params }: { params: { id: string } }) 
     </div>
   )
 }
-

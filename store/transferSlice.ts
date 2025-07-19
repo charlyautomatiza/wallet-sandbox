@@ -57,4 +57,3 @@ export const transferSlice = createSlice({
 
 export const { setSelectedContact, setAmount } = transferSlice.actions
 export const transferReducer = transferSlice.reducer
-

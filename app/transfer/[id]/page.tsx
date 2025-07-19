@@ -62,4 +62,3 @@ export default function TransferDetails({ params }: { params: { id: string } }) 
     </div>
   )
 }
-

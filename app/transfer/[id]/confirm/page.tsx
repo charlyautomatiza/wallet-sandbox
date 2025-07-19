@@ -95,4 +95,3 @@ export default function TransferConfirm({ params }: { params: { id: string } }) 
     </div>
   )
 }
-
