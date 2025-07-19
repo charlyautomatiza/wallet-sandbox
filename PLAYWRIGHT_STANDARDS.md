@@ -51,8 +51,7 @@ npm install -D @playwright/test
 # Install browsers
 npx playwright install
 
-# Install Playwright MCP for AI-assisted testing
-npm install -D @playwright/mcp
+# Note: If AI-assisted testing tools are required, consult the project documentation for setup instructions.
 
 # Run tests
 npx playwright test
@@ -120,7 +119,7 @@ The Playwright tests are configured to run in CI environments. Key features:
    });
    ```
 
-3. **Use Proper Assertions**
+8. **Use Proper Assertions**
    ```typescript
    // Good - Uses auto-waiting
    await expect(page.getByText('Success')).toBeVisible();
@@ -130,7 +129,7 @@ The Playwright tests are configured to run in CI environments. Key features:
    expect(await page.getByText('Success').isVisible()).toBeTruthy();
    ```
 
-4. **Structure Tests with AAA Pattern**
+9. **Structure Tests with AAA Pattern**
    ```typescript
    test('user can add item to cart', async ({ page }) => {
      // Arrange
@@ -144,7 +143,7 @@ The Playwright tests are configured to run in CI environments. Key features:
    });
    ```
 
-5. **Use MCP Effectively**
+10. **Use MCP Effectively**
    - Use Snapshot Mode (default) for most interactions
    - Use Vision Mode only when necessary
    - Include error handling and edge cases

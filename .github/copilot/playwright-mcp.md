@@ -11,11 +11,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   // ... other config
   use: {
-    // Enable Playwright MCP
-    mcp: {
-      mode: 'snapshot', // Default mode
-      // Use 'vision' for visual interaction when needed
-    }
+    // Add any Playwright-specific configurations here
   }
 });
 ```

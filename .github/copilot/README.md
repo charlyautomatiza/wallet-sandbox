@@ -30,8 +30,7 @@ To set up Playwright in this project:
 # Install Playwright
 npm init playwright@latest
 
-# Install Playwright MCP (Model Context Protocol)
-npm install -D @playwright/mcp
+# Note: If AI-assisted testing tools are required, consult the project documentation for setup instructions.
 
 # Run tests
 npx playwright test
