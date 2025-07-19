@@ -7,14 +7,14 @@ import type { RootState } from "@/store/store"
 import { setSelectedContact } from "@/store/transferSlice"
 import { handleTransfer } from "@/app/actions"
 import Link from "next/link"
-import { useFormState } from "react-dom"
+import { useActionState } from "react"
 
 export default function Transfer() {
   const [hasUala, setHasUala] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const dispatch = useDispatch()
   const contacts = useSelector((state: RootState) => state.transfer.contacts)
-  const [state, formAction] = useFormState(handleTransfer, null)
+  const [state, formAction] = useActionState(handleTransfer, null)
 
   const filteredContacts = contacts.filter(
     (contact) => contact.hasUala === hasUala && contact.name.toLowerCase().includes(searchTerm.toLowerCase()),

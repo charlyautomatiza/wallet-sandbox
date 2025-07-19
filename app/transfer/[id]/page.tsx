@@ -1,17 +1,22 @@
 "use client"
 
+import { use } from "react"
 import { useSelector } from "react-redux"
 import { ArrowLeft, MoreVertical } from "lucide-react"
 import type { RootState } from "@/store/store"
 import Link from "next/link"
 
-export default function TransferDetails({ params }: { params: { id: string } }) {
-  const contact = useSelector((state: RootState) => state.transfer.contacts.find((c) => c.id === params.id))
+export default function TransferDetails({ params }: { params: { id: string } | Promise<{ id: string }> }) {
+  // Handle both Promise and regular object cases
+  const resolvedParams = params instanceof Promise ? use(params) : params
+  const { id } = resolvedParams
+
+  const contact = useSelector((state: RootState) => state.transfer.contacts.find((c) => c.id === id))
 
   if (!contact) return null
 
   return (
-    <div className="min-h-screen bg-blue-600 pb-24">
+    <div className="min-h-screen bg-blue-600">
       {/* Header */}
       <div className="p-4 flex items-center justify-between text-white">
         <Link href="/transfer" className="p-2" aria-label="Volver">
@@ -31,8 +36,8 @@ export default function TransferDetails({ params }: { params: { id: string } }) 
       </div>
 
       {/* Transfer History */}
-      <div className="bg-white flex-1 rounded-t-3xl p-4">
-        <div className="mb-24">
+      <div className="bg-white flex-1 rounded-t-3xl p-4 pb-32">
+        <div className="space-y-4">
           {contact.recentTransfers.map((transfer, index) => (
             <div key={index} className="flex items-center justify-between py-4 border-b">
               <div>
@@ -48,11 +53,11 @@ export default function TransferDetails({ params }: { params: { id: string } }) 
         </div>
       </div>
 
-      {/* Fixed Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+      {/* Fixed Button - Above bottom navigation */}
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-white border-t z-50">
         <Link
-          href={`/transfer/${params.id}/amount`}
-          className="block w-full bg-blue-600 text-white py-4 rounded-lg text-center font-semibold"
+          href={`/transfer/${id}/amount`}
+          className="block w-full bg-blue-600 text-white py-4 rounded-lg text-center font-semibold shadow-lg"
           role="button"
           aria-label={`Enviar dinero a ${contact.name}`}
         >
