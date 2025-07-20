@@ -1,0 +1,124 @@
+# Playwright Test Automation Standards for Cursor AI
+
+This file provides guidance for Cursor AI when generating or modifying Playwright test code.
+
+## Test Structure Guidelines
+
+- ALWAYS use TypeScript for all test files (.spec.ts)
+- All Page Object Models MUST be placed in the `tests/pages` directory
+- NEVER define Page Objects within test spec files
+- Follow the Page Object Model pattern for organizing tests
+- Structure tests using the Arrange-Act-Assert pattern
+- Use descriptive test and function names
+- Use route handlers to mock API responses for comprehensive test coverage
+
+## Test Independence Requirements
+
+- Each test MUST be completely independent and self-contained
+- NEVER create tests that depend on other tests having run first
+- Each test MUST create its own test data and state
+- Tests MUST be executable in any order, including in isolation
+- Each test MUST have a single responsibility (test ONE thing)
+- For similar scenarios with different data, use data-driven testing
+
+## Test Naming Requirements
+
+- Test names MUST be descriptive and explain the behavior being tested
+- NEVER use numeric prefixes in test titles (e.g., "TC1:", "Test 2:", etc.)
+- Test names should not imply any execution order
+- Example: Use `test('User cannot login with invalid credentials')` instead of `test('TC2: User cannot login with invalid credentials')`
+
+## Locator Preferences
+
+1. Use role-based locators whenever possible:
+```typescript
+await page.getByRole('button', { name: 'Submit' }).click();
+await page.getByRole('textbox', { name: 'Email' }).fill('user@example.com');
+```
+
+2. Use test IDs when role-based locators are insufficient:
+```typescript
+await page.getByTestId('submit-button').click();
+```
+
+3. Use text content as a fallback:
+```typescript
+await page.getByText('Welcome').isVisible();
+```
+
+4. Avoid CSS selectors and XPath when possible
+
+## Page Object Implementation
+
+Generate page objects following this pattern:
+```typescript
+import { Page } from '@playwright/test';
+
+export class LoginPage {
+  readonly path = '/login';
+  
+  constructor(private page: Page) {}
+  
+  // Locators
+  private get emailInput() { return this.page.getByRole('textbox', { name: 'Email' }); }
+  private get passwordInput() { return this.page.getByRole('textbox', { name: 'Password' }); }
+  private get loginButton() { return this.page.getByRole('button', { name: 'Login' }); }
+  
+  // Actions
+  async goto() {
+    await this.page.goto(this.path);
+  }
+  
+  async login(email: string, password: string) {
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.loginButton.click();
+  }
+}
+```
+
+## Assertion Preferences
+
+- Use built-in Playwright assertions
+- Prefer auto-waiting assertions over manual waits
+- Check visibility before interacting with elements
+
+```typescript
+// Preferred
+await expect(page.getByText('Success')).toBeVisible();
+
+// Avoid
+await page.waitForTimeout(1000);
+```
+
+## API Mocking
+
+Use Playwright's route handling to mock API responses:
+
+```typescript
+// Mock API responses
+await page.route('**/api/endpoint', (route) => {
+  route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ key: 'value' })
+  });
+});
+```
+
+Create test cases that use mocked API responses:
+- Mock success responses for happy path tests
+- Mock error responses to test error handling
+- Mock empty responses to test edge cases
+- Validate request payloads when testing form submissions
+
+## MCP (Model Context Protocol) Usage
+
+When generating tests with MCP, follow these guidelines:
+
+- Use natural language descriptions for test steps
+- Leverage the accessibility tree in Snapshot Mode (default)
+- Use Vision Mode only when necessary for visual interactions
+- Include error handling and edge cases
+
+For more detailed standards, refer to the files in .github/copilot/ directory.
