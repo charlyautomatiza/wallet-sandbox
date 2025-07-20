@@ -9,23 +9,61 @@ export async function handleTransfer(prevState: any, formData: FormData) {
     const comment = formData.get("comment") || ""
     const contactId = formData.get("contactId")
     const contactName = formData.get("contactName")
-
+    const isScheduled = formData.get("isScheduled") === "true"
+    const scheduledDate = formData.get("scheduledDate") as string || null
+    const frequency = formData.get("frequency") as string || "once"
+    
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    // Simulate successful transfer
+    
+    const timestamp = new Date().toISOString()
+    
+    // Handle scheduled transfer
+    if (isScheduled && scheduledDate) {
+      console.log("Scheduled transfer created:", {
+        amount,
+        reason,
+        comment,
+        contactId,
+        contactName,
+        scheduledDate,
+        frequency,
+        timestamp,
+      })
+      
+      revalidatePath("/transfer")
+      return {
+        success: true,
+        isScheduled: true,
+        data: {
+          id: crypto.randomUUID(),
+          amount: Number(amount),
+          reason,
+          comment,
+          contactId,
+          contactName,
+          scheduledDate,
+          frequency,
+          status: 'pending',
+          createdAt: timestamp,
+        },
+      }
+    }
+    
+    // Handle immediate transfer
     console.log("Transfer processed:", {
       amount,
       reason,
       comment,
       contactId,
       contactName,
-      timestamp: new Date().toISOString(),
+      timestamp,
     })
 
     revalidatePath("/transfer")
     return {
       success: true,
+      isScheduled: false,
       data: {
         amount: Number(amount),
         reason,
@@ -33,7 +71,7 @@ export async function handleTransfer(prevState: any, formData: FormData) {
         contactId,
         contactName,
         date: new Date().toLocaleDateString(),
-        timestamp: new Date().toISOString(),
+        timestamp,
       },
     }
   } catch (error) {
@@ -63,6 +101,10 @@ export async function handleRequestMoney(prevState: any, formData: FormData) {
       },
     }
   } catch (error) {
-    return { error: "Failed to process request" }
+    console.error("Request money failed:", error)
+    return { 
+      success: false,
+      error: "Failed to process request. Please try again." 
+    }
   }
 }

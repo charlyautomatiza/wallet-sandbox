@@ -15,6 +15,9 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
   const router = useRouter()
   const contact = useSelector((state: RootState) => state.transfer.contacts.find((c) => c.id === id))
   const amount = useSelector((state: RootState) => state.transfer.amount)
+  const isScheduled = useSelector((state: RootState) => state.transfer.isScheduled)
+  const scheduledDate = useSelector((state: RootState) => state.transfer.scheduledDate)
+  const frequency = useSelector((state: RootState) => state.transfer.frequency)
 
   if (!contact || !amount) {
     router.push("/transfer")
@@ -28,6 +31,16 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
     hour: "2-digit",
     minute: "2-digit",
   })
+  
+  // Format the scheduled date if present
+  let formattedScheduledDate = ""
+  if (scheduledDate) {
+    formattedScheduledDate = new Date(scheduledDate).toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    })
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -38,10 +51,21 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
         </div>
 
         {/* Success Message */}
-        <h1 className="text-3xl font-bold mb-2 text-center">¡Transferencia exitosa!</h1>
+        <h1 className="text-3xl font-bold mb-2 text-center">
+          {scheduledDate ? "¡Transferencia programada!" : "¡Transferencia exitosa!"}
+        </h1>
         <p className="text-gray-600 mb-8 text-center text-lg">
-          Transferiste <span className="font-semibold">${amount.toLocaleString()}</span> a{" "}
-          <span className="font-semibold">{contact.name}</span>
+          {scheduledDate ? (
+            <>
+              Has programado transferir <span className="font-semibold">${amount.toLocaleString()}</span> a{" "}
+              <span className="font-semibold">{contact.name}</span>
+            </>
+          ) : (
+            <>
+              Transferiste <span className="font-semibold">${amount.toLocaleString()}</span> a{" "}
+              <span className="font-semibold">{contact.name}</span>
+            </>
+          )}
         </p>
 
         {/* Transfer Details Card */}
@@ -55,14 +79,49 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
               <span className="text-gray-600">Monto:</span>
               <span className="font-medium">${amount.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Fecha:</span>
-              <span className="font-medium">{currentDate}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Estado:</span>
-              <span className="font-medium text-green-600">Completada</span>
-            </div>
+            {scheduledDate ? (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Fecha programada:</span>
+                  <span className="font-medium">
+                    {new Date(scheduledDate).toLocaleDateString("es-AR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric"
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Frecuencia:</span>
+                  <span className="font-medium">
+                    {(() => {
+                      switch (frequency) {
+                        case 'once': return 'Una sola vez';
+                        case 'daily': return 'Diariamente';
+                        case 'weekly': return 'Semanalmente';
+                        case 'monthly': return 'Mensualmente';
+                        default: return 'Una sola vez';
+                      }
+                    })()}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Estado:</span>
+                  <span className="font-medium text-blue-600">Programada</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Fecha:</span>
+                  <span className="font-medium">{currentDate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Estado:</span>
+                  <span className="font-medium text-green-600">Completada</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -84,16 +143,12 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
         <Link
           href="/"
           className="block w-full bg-blue-600 text-white py-4 rounded-lg text-center font-semibold shadow-lg"
-          role="button"
-          aria-label="Volver al inicio"
         >
           Volver al inicio
         </Link>
         <Link
           href={`/transfer/${id}`}
           className="block w-full border border-blue-600 text-blue-600 py-4 rounded-lg text-center font-semibold shadow-lg"
-          role="button"
-          aria-label="Realizar nueva transferencia"
         >
           Nueva transferencia
         </Link>
