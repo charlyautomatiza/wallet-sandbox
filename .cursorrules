@@ -1,25 +1,43 @@
-# Playwright Test Automation Standards for Cursor AI
+# Wallet Sandbox - Standards for Cursor AI
 
-This file provides guidance for Cursor AI when generating or modifying Playwright test code.
+This file provides guidelines for Cursor AI when generating or modifying code in the Wallet Sandbox project.
 
-## Test Structure Guidelines
+## Main Rules
 
-- ALWAYS use TypeScript for all test files (.spec.ts)
-- All Page Object Models MUST be placed in the `tests/pages` directory
-- NEVER define Page Objects within test spec files
-- Follow the Page Object Model pattern for organizing tests
-- Structure tests using the Arrange-Act-Assert pattern
-- Use descriptive test and function names
-- Use route handlers to mock API responses for comprehensive test coverage
+1. Refer to specific rules files for each aspect of the project:
+   - `.cursor/rules/wallet-standards.md`: Build, development and Git standards
+   - `.cursor/rules/playwright-tests.md`: Specific standards for Playwright tests
 
-## Test Independence Requirements
+## Change Management and Git Workflow
+
+1. **Verify User Story (US)**:
+   - ALWAYS ask for the US/TT/BG being implemented
+   - Verify its existence in `BACKLOG.md` or GitHub Issues
+   - If it doesn't exist, suggest creating a new one following the standard format
+
+2. **Git Workflow**:
+   - ALWAYS start from updated main branch
+   - Create branch with name `type/US-XXX-short-description`
+   - Make commits with format `[US-XXX] Concise description`
+   - Request confirmation before publishing
+   - Add GitHub Copilot as reviewer in PRs
+
+## Next.js 15 Standards
+
+- ALWAYS use App Router and Server Components by default
+- For dynamic routes, ALWAYS await params
+- Structure components with: hooks, handlers, early returns, rendering
+- Use Server Actions for data modification
+- Use Tailwind CSS and shadcn/ui components
+
+## Playwright Test Standards
 
 - Each test MUST be completely independent and self-contained
-- NEVER create tests that depend on other tests having run first
-- Each test MUST create its own test data and state
-- Tests MUST be executable in any order, including in isolation
+- NEVER create tests that depend on other tests run previously
 - Each test MUST have a single responsibility (test ONE thing)
-- For similar scenarios with different data, use data-driven testing
+- Use Page Object Model patterns to organize tests
+- Prioritize role-based locators (getByRole)
+- Use auto-waiting assertions
 
 ## Test Naming Requirements
 

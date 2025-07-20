@@ -1,41 +1,232 @@
-# Playwright Test Automation Standards for Wallet Sandbox
+# Instructions for GitHub Copilot - Wallet Sandbox
 
-## General Guidelines
+This document contains instructions for GitHub Copilot when working with the Wallet Sandbox project. These instructions must be followed rigorously to maintain code quality and consistency.
 
-When generating Playwright tests for this project, follow these key principles:
+## Main Technologies
+
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State**: Redux Toolkit
+- **Testing**: Playwright
+
+## Instruction Sections
+
+1. [Change Management](#change-management)
+2. [Development Standards](#development-standards)
+3. [Test Automation](#test-automation)
+
+## Change Management
+
+### Backlog Verification
+
+Before implementing any code changes:
+
+1. **Verify task existence**: Ask the user for the US/TT/BG (User Story, Technical Task, or Bug) they are implementing.
+   
+2. **If the task exists**:
+   - Confirm it has a valid ID (format: US-XXX, TT-XXX, or BG-XXX)
+   - Verify that the task description matches the requested change
+
+3. **If the task doesn't exist**:
+   - Recommend creating a new task
+   - Help the user formulate an appropriate description following the standard User Story format:
+     ```
+     As a [role]
+     I want [capability]
+     So that [benefit]
+     ```
+   - Suggest relevant acceptance criteria
+
+### Git Workflow
+
+For any code modification, require the following flow:
+
+1. **Start from updated main**:
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+
+2. **Create working branch**:
+   - Name format: `type/US-XXX-short-description`
+   - Types: feature, bugfix, hotfix, refactor, chore
+   ```bash
+   git checkout -b feature/US-201-savings-goals
+   ```
+
+3. **Implement changes**:
+   - Develop the required functionality
+   - Follow all code standards
+
+4. **Commit**:
+   - Message format: `[US-XXX] Concise description`
+   ```bash
+   git add .
+   git commit -m "[US-201] Implement savings goals creation"
+   ```
+
+5. **Review and Publication**:
+   - Ask for user confirmation before publishing changes
+   - Verify that the changes meet expectations
+   ```bash
+   git push origin feature/US-201-savings-goals
+   ```
+
+6. **Pull Request**:
+   - Help create PR with appropriate title and description
+   - Ensure Copilot is included as reviewer
+   - Title format: `[US-XXX] Brief description`
+
+7. **Review Management**:
+   - List and prioritize Copilot's suggestions
+   - Help the user implement necessary corrections
+
+## Development Standards
+
+### Next.js 15 App Router
+
+- **Always** use App Router with the following practices:
+  ```typescript
+  // Dynamic routes - ALWAYS await params
+  export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params
+    // Component logic
+  }
+  
+  // Server Actions
+  'use server'
+  
+  import { revalidatePath } from 'next/cache'
+  
+  export async function handleAction(prevState: any, formData: FormData) {
+    try {
+      // Validation and processing
+      revalidatePath('/relevant-path')
+      return { success: true, data: result }
+    } catch (error) {
+      return { success: false, error: 'User-friendly error message' }
+    }
+  }
+  ```
+
+- **Client Components** - Use only when necessary:
+  ```typescript
+  'use client'
+  
+  import { useActionState } from 'react'
+  
+  export function InteractiveComponent() {
+    const [state, formAction, isPending] = useActionState(serverAction, null)
+    // Component logic
+  }
+  ```
+
+## Test Automation
+
+### General Principles
 
 1. **Use TypeScript exclusively**: Always generate tests with `.spec.ts` extension and Page Object Models with `.ts` extension.
 
-2. **Follow Page Object Model pattern**: 
+2. **Follow the Page Object Model pattern**: 
    - Place all Page Objects in the `tests/pages` directory
-   - Never define Page Objects within test spec files
+   - Never define Page Objects within test specification files
    - Use methods in Page Objects to encapsulate page interactions
 
 3. **Ensure test independence**:
    - Each test must be self-contained with its own setup
-   - Never rely on other tests having run first
+   - Never depend on other tests having run first
    - Tests must be executable in any order
 
 4. **Maintain single responsibility**:
    - Each test should verify ONE specific behavior or scenario
    - Never group multiple test cases in a single test
-   - Use data-driven testing for similar flows with different data
+   - Use parameterized tests for similar flows with different data
+
+### TypeScript
+
+- **Strict typing**:
+  ```typescript
+  // Define appropriate interfaces
+  interface TransferData {
+    amount: number
+    recipientId: string
+    description?: string
+  }
+  
+  // Avoid 'any' - use appropriate types
+  const handleTransfer = (data: TransferData): Promise<ApiResponse<Transfer>> => {
+    // Implementation
+  }
+  ```
+
+### Components
+
+- **Component Structure**:
+  ```typescript
+  'use client' // Only when necessary
+  
+  interface ComponentProps {
+    title: string
+    amount: number
+    onConfirm: () => void
+    className?: string
+  }
+  
+  export function ComponentName({
+    title,
+    amount,
+    onConfirm,
+    className
+  }: ComponentProps) {
+    // 1. Hooks first
+    const [loading, setLoading] = useState(false)
+    
+    // 2. Event handlers
+    const handleConfirmation = async () => {
+      setLoading(true)
+      try {
+        await onConfirm()
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    // 3. Early returns
+    if (!title) return null
+    
+    // 4. Main rendering
+    return (
+      <Card className={cn("p-6", className)}>
+        <h2 className="text-xl font-semibold mb-4">{title}</h2>
+        <p className="text-2xl font-bold mb-6">${amount.toFixed(2)}</p>
+        <Button 
+          onClick={handleConfirmation} 
+          disabled={loading}
+          className="w-full"
+        >
+          {loading ? 'Processing...' : 'Confirm'}
+        </Button>
+      </Card>
+    )
+  }
+  ```
 
 ## Test Structure and Naming
 
-1. **Use descriptive test names**:
+1. **Use descriptive names**:
    - Names should clearly describe the behavior being tested
    - Never use numeric prefixes (e.g., "TC1:", "Test 2:")
    - Use action-oriented descriptions
 
-2. **Structure using AAA pattern** (Arrange-Act-Assert):
+2. **Structure using the AAA pattern** (Arrange-Act-Assert):
    ```typescript
    test('user can add item to cart', async ({ page }) => {
      // Arrange
      await page.goto('/products');
      
      // Act
-     await page.getByText('Add to Cart').click();
+     await page.getByText('Add to cart').click();
      
      // Assert
      await expect(page.getByText('Item added')).toBeVisible();
