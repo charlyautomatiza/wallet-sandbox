@@ -4,6 +4,32 @@
 
 These rules provide guidance for generating and maintaining Playwright tests for the Wallet Sandbox application.
 
+## Change Management and Git Workflow
+
+Before implementing any automation test:
+
+1. **Verify User Story**:
+   - ALWAYS ask for the US/TT/BG (User Story, Technical Task, Bug) being automated
+   - Verify its existence in GitHub Issues
+   - If it doesn't exist, suggest creating a new issue in GitHub Issues following the standard format
+
+2. **Git Workflow**:
+   - ALWAYS start from an updated main branch
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+   - Create branch with descriptive name for tests
+   ```bash
+   git checkout -b test/US-XXX-test-description
+   ```
+   - Make commits with descriptive messages
+   ```bash
+   git commit -m "[Test][US-XXX] Add transfer tests"
+   ```
+   - Request confirmation before publishing
+   - Add GitHub Copilot as reviewer in PRs
+
 ## Test Independence and Single Responsibility
 
 - Each test MUST be completely independent of all other tests
