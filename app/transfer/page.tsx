@@ -30,6 +30,23 @@ export default function Transfer() {
       </div>
 
       <div className="p-4">
+        {/* Link to Scheduled Transfers */}
+        <Link 
+          href="/transfer/scheduled"
+          className="flex items-center justify-between w-full p-4 bg-blue-50 border border-blue-100 rounded-lg mb-6"
+        >
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+              <span className="text-blue-600 text-lg">⏰</span>
+            </div>
+            <div>
+              <h2 className="font-semibold text-blue-700">Transferencias Programadas</h2>
+              <p className="text-xs text-blue-600">Gestiona tus pagos recurrentes</p>
+            </div>
+          </div>
+          <ChevronRight className="text-blue-500" />
+        </Link>
+        
         {/* Toggle */}
         <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
           <button

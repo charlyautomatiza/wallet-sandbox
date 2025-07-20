@@ -2,7 +2,7 @@
 
 import { use } from "react"
 import { useSelector } from "react-redux"
-import { CheckCircle2, Share, Download } from "lucide-react"
+import { CheckCircle2, Share, Download, Calendar } from "lucide-react"
 import type { RootState } from "@/store/store"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -15,6 +15,11 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
   const router = useRouter()
   const contact = useSelector((state: RootState) => state.transfer.contacts.find((c) => c.id === id))
   const amount = useSelector((state: RootState) => state.transfer.amount)
+  const frequency = useSelector((state: RootState) => state.transfer.frequency)
+  const startDate = useSelector((state: RootState) => state.transfer.startDate)
+  
+  // Check if this is a scheduled transfer
+  const isScheduled = frequency !== "once"
 
   if (!contact || !amount) {
     router.push("/transfer")
@@ -28,6 +33,13 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
     hour: "2-digit",
     minute: "2-digit",
   })
+  
+  // Format the start date for display
+  const formattedStartDate = new Date(startDate).toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
 
   return (
     <div className="min-h-screen bg-white">
@@ -38,10 +50,23 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
         </div>
 
         {/* Success Message */}
-        <h1 className="text-3xl font-bold mb-2 text-center">¡Transferencia exitosa!</h1>
+        <h1 className="text-3xl font-bold mb-2 text-center">
+          {frequency === "once" 
+            ? "¡Transferencia exitosa!" 
+            : "¡Transferencia programada!"}
+        </h1>
         <p className="text-gray-600 mb-8 text-center text-lg">
-          Transferiste <span className="font-semibold">${amount.toLocaleString()}</span> a{" "}
-          <span className="font-semibold">{contact.name}</span>
+          {frequency === "once" ? (
+            <>
+              Transferiste <span className="font-semibold">${amount.toLocaleString()}</span> a{" "}
+              <span className="font-semibold">{contact.name}</span>
+            </>
+          ) : (
+            <>
+              Programaste una transferencia de <span className="font-semibold">${amount.toLocaleString()}</span> a{" "}
+              <span className="font-semibold">{contact.name}</span>
+            </>
+          )}
         </p>
 
         {/* Transfer Details Card */}
@@ -55,13 +80,45 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
               <span className="text-gray-600">Monto:</span>
               <span className="font-medium">${amount.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Fecha:</span>
-              <span className="font-medium">{currentDate}</span>
-            </div>
+            
+            {frequency === "once" ? (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Fecha:</span>
+                <span className="font-medium">{currentDate}</span>
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Frecuencia:</span>
+                  <span className="font-medium">
+                    {(() => {
+                      switch(frequency) {
+                        case "daily": return "Diaria"
+                        case "weekly": return "Semanal"
+                        case "monthly": return "Mensual"
+                        default: return ""
+                      }
+                    })()}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Fecha de inicio:</span>
+                  <span className="font-medium">
+                    {new Date(startDate).toLocaleDateString("es-AR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              </>
+            )}
+            
             <div className="flex justify-between">
               <span className="text-gray-600">Estado:</span>
-              <span className="font-medium text-green-600">Completada</span>
+              <span className="font-medium text-green-600">
+                {frequency === "once" ? "Completada" : "Programada"}
+              </span>
             </div>
           </div>
         </div>
@@ -84,16 +141,12 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
         <Link
           href="/"
           className="block w-full bg-blue-600 text-white py-4 rounded-lg text-center font-semibold shadow-lg"
-          role="button"
-          aria-label="Volver al inicio"
         >
           Volver al inicio
         </Link>
         <Link
           href={`/transfer/${id}`}
           className="block w-full border border-blue-600 text-blue-600 py-4 rounded-lg text-center font-semibold shadow-lg"
-          role="button"
-          aria-label="Realizar nueva transferencia"
         >
           Nueva transferencia
         </Link>
