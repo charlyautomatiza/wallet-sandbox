@@ -28,6 +28,16 @@ export default function Transfer() {
         </Link>
         <h1 className="text-xl font-semibold flex-1 text-center mr-6">Transferencias</h1>
       </div>
+      
+      <div className="p-4 bg-blue-50 flex justify-between items-center">
+        <div>
+          <h2 className="font-medium">Transferencias programadas</h2>
+          <p className="text-sm text-gray-600">Gestiona tus transferencias automáticas</p>
+        </div>
+        <Link href="/transfer/scheduled" className="text-blue-600 font-medium">
+          Ver
+        </Link>
+      </div>
 
       <div className="p-4">
         {/* Toggle */}
