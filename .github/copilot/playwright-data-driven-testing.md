@@ -272,8 +272,21 @@ import { faker } from '@faker-js/faker';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Optional: Set the locale for internationalization testing
-// faker.locale = 'es';
+faker.locale = 'es'; // Example: Set locale to Spanish
+
+// Generate locale-specific user data for testing
+export const generateLocalizedUser = (locale = 'en', role = 'user') => {
+  faker.locale = locale; // Set the desired locale
+  return {
+    id: faker.string.uuid(),
+    name: faker.person.fullName(),
+    email: faker.internet.email(),
+    username: faker.internet.userName(),
+    password: faker.internet.password(),
+    role,
+    createdAt: faker.date.recent().toISOString()
+  };
+};
 
 export const loadTestData = <T>(filename: string): T[] => {
   const filePath = path.join(__dirname, '../data', filename);

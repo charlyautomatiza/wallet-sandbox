@@ -1,5 +1,7 @@
 # Playwright MCP (Model Context Protocol) Standards
 
+The Model Context Protocol (MCP) is a framework designed to enhance test automation by enabling dynamic, context-aware interactions with user interfaces. It provides tools and methodologies for creating robust, adaptive, and self-healing tests, making it easier to handle complex UI scenarios and edge cases.
+
 ## MCP Setup
 
 Set up Playwright MCP in your project:

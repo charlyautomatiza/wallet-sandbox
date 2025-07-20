@@ -30,7 +30,7 @@ To set up Playwright in this project:
 # Install Playwright
 npm init playwright@latest
 
-# Note: If AI-assisted testing tools are required, consult the project documentation for setup instructions.
+# Note: If AI-assisted testing tools are required, refer to the `.github/copilot/` directory for GitHub Copilot setup or the `.cursor/rules/` directory for Cursor AI setup. Detailed instructions can also be found in the `README.md` file in the root directory.
 
 # Run tests
 npx playwright test

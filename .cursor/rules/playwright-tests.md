@@ -138,7 +138,13 @@ for (const scenario of transferScenarios) {
         route.fulfill({
           status: 404,
           contentType: 'application/json',
-          body: JSON.stringify({ error: 'Recipient not found' })
+          body: JSON.stringify({ 
+            error: { 
+              code: 'RECIPIENT_NOT_FOUND', 
+              message: 'Recipient not found', 
+              details: null 
+            } 
+          })
         });
       });
     }
