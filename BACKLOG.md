@@ -144,7 +144,7 @@ La aplicación actualmente cuenta con las siguientes funcionalidades implementad
 - Debe mostrar historial de transferencias programadas
 
 **Tareas:**
-- Implementar en transferencias la opción se seleccionar una fecha del futuro
+- Implementar en transferencias la opción de seleccionar una fecha del futuro
 - Desarrollar motor de ejecución automática
 - Crear interfaz de gestión de programaciones
 - Implementar sistema de notificaciones
@@ -223,7 +223,7 @@ La aplicación actualmente cuenta con las siguientes funcionalidades implementad
 - Debe clasificar fondos por nivel de riesgo
 - Debe mostrar composición y rendimiento histórico
 - Debe permitir suscripción y rescate
-- Debe actualizar valor de cuotapartes diariamente
+- Debe actualizar valor de cuotas parte diariamente
 
 **Tareas:**
 - Implementar catálogo de fondos disponibles
