@@ -30,7 +30,7 @@ ALWAYS complete this step FIRST before discussing any technical details or sugge
    - IMMEDIATELY ask the user for the US/TT/BG ID (User Story, Technical Task, Bug)
    - If not provided, DO NOT PROCEED until this information is available
    - Search for the task ID in BACKLOG.md and GitHub Issues
-   - If found, confirm with the user: "I found [US-XXX]: [description]. Is this the task you're working on?"
+   - If found, confirm with the user: "I found [US-XXX]: [task description]. Is this the task you're working on?"
    - Document the ID in all communications: "Working on [US-XXX]: Task description"
    
 3. **Create task if none exists**:

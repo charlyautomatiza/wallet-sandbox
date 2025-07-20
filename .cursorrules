@@ -23,7 +23,7 @@ REFUSE to make or suggest code changes if these steps have not been completed.
    - IMMEDIATELY ask for the US/TT/BG being implemented
    - If not provided, DO NOT PROCEED until this information is available
    - Search for the task ID in both BACKLOG.md and GitHub Issues
-   - If found, confirm with the user: "I found [US-XXX]: [description]. Is this the task you're working on?"
+   - If found, confirm with the user: "I found [US-XXX]: [task description]. Is this the task you're working on?"
    - Document the ID in all communications: "Working on [US-XXX]: Task description"
    - If it doesn't exist, STOP and inform the user: "I couldn't find a matching task in the backlog or GitHub Issues."
    - Help create a new task in GitHub Issues with proper format and require confirmation of the new ID before proceeding

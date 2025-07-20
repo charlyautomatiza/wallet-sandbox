@@ -17,7 +17,7 @@ REFUSE to make or suggest code changes if these steps have not been completed.
 
 ## Instruction Sections
 
-1. [Change Management](#change-management) - MANDATORY FIRST STEP
+1. [Change Management](#change-management) - **MANDATORY FIRST STEP**
 2. [Development Standards](#development-standards)
 3. [Test Automation](#test-automation)
 
@@ -38,7 +38,7 @@ ALWAYS complete this step FIRST before discussing any technical details or sugge
    - IMMEDIATELY ask the user for the US/TT/BG (User Story, Technical Task, or Bug) ID they are implementing
    - If not provided, DO NOT PROCEED until this information is available
    - Search for the task ID in BACKLOG.md and GitHub Issues
-   - If found, confirm with the user: "I found [US-XXX]: [description]. Is this the task you're working on?"
+   - If found, confirm with the user: "I found [US-XXX]: [task description]. Is this the task you're working on?"
    
 3. **If the task exists**:
    - Confirm it has a valid ID (format: US-XXX, TT-XXX, or BG-XXX)
