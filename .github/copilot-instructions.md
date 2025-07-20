@@ -226,7 +226,7 @@ For any code modification, require the following flow:
      await page.goto('/products');
      
      // Act
-     await page.getByText('Add to cart').click();
+     await page.getByText('Add to Cart').click();
      
      // Assert
      await expect(page.getByText('Item added')).toBeVisible();

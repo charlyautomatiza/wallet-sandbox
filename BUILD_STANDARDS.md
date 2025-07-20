@@ -19,7 +19,7 @@ All code modifications must be associated with a backlog item:
 - **Technical Task (TT)**: Technical improvements, refactoring, etc.
 - **Bug (BG)**: Correction of identified errors
 
-**IMPORTANT**: Before starting any change, always verify that a corresponding US/TT/BG exists in the GitHub backlog.
+**IMPORTANT**: Before starting any change, always verify that a corresponding US/TT/BG exists in the GitHub Issues backlog.
 
 ### 2. Git Workflow
 

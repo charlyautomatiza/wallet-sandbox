@@ -16,8 +16,8 @@ Before implementing any change:
 
 1. **Verify task in backlog**:
    - Ask the user for the US/TT/BG ID (User Story, Technical Task, Bug)
-   - Verify existence in the BACKLOG.md file or in GitHub Issues
-   - If it doesn't exist, suggest creating a new task following the standard format
+   - Verify existence in GitHub Issues or another designated tracking system
+   - If it doesn't exist, suggest creating a new task in GitHub Issues following the standard format
 
 2. **Git workflow**:
    - Always start from the updated main branch

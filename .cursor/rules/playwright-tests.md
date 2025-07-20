@@ -10,8 +10,8 @@ Before implementing any automation test:
 
 1. **Verify User Story**:
    - ALWAYS ask for the US/TT/BG (User Story, Technical Task, Bug) being automated
-   - Verify its existence in `BACKLOG.md` or GitHub Issues
-   - If it doesn't exist, suggest creating a new one following the standard format
+   - Verify its existence in GitHub Issues
+   - If it doesn't exist, suggest creating a new issue in GitHub Issues following the standard format
 
 2. **Git Workflow**:
    - ALWAYS start from an updated main branch
