@@ -51,14 +51,18 @@ export class HomePage {
    * Toggle balance visibility
    */
   async toggleBalanceVisibility() {
-    await this.page.getByRole('button').filter({ has: this.page.locator('svg').first() }).click();
+    // Note: In a real implementation, we would add data-testid="balance-toggle"
+    // to the button in the actual application code
+    await this.page.getByRole('button', { name: /hide|show/i }).click();
   }
 
   /**
    * Get cards section
    */
   getCardsSection() {
-    return this.page.getByRole('heading', { name: 'Mis Tarjetas' }).locator('..').locator('..');
+    // Note: In a real implementation, we would add data-testid="cards-section"
+    // to the container in the actual application code
+    return this.page.getByText('Mis Tarjetas').first().locator('xpath=ancestor::div[contains(@class, "mb-8")]');
   }
 
   /**

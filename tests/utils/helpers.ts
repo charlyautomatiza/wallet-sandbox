@@ -1,4 +1,9 @@
 import { Page } from '@playwright/test';
+import * as path from 'path';
+import * as fs from 'fs';
+
+// Default output directory from Playwright config
+const DEFAULT_OUTPUT_DIR = 'test-results';
 
 /**
  * Wait for navigation and network idle
@@ -33,5 +38,15 @@ export function formatCurrency(amount: number): string {
  */
 export async function captureScreenshot(page: Page, name: string): Promise<void> {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  await page.screenshot({ path: `./test-results/screenshots/${name}-${timestamp}.png` });
+  const outputDir = process.env.PLAYWRIGHT_OUTPUT_DIR || DEFAULT_OUTPUT_DIR;
+  const screenshotDir = path.join(outputDir, 'screenshots');
+  
+  // Ensure screenshot directory exists
+  if (!fs.existsSync(screenshotDir)) {
+    fs.mkdirSync(screenshotDir, { recursive: true });
+  }
+  
+  await page.screenshot({ 
+    path: path.join(screenshotDir, `${name}-${timestamp}.png`) 
+  });
 }
