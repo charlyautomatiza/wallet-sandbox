@@ -60,9 +60,12 @@ export class HomePage {
    * Get cards section
    */
   getCardsSection() {
-    // Note: In a real implementation, we would add data-testid="cards-section"
-    // to the container in the actual application code
-    return this.page.getByText('Mis Tarjetas').first().locator('xpath=ancestor::div[contains(@class, "mb-8")]');
+    // TODO: This is a temporary solution. In a real implementation, we would add 
+    // data-testid="cards-section" to the container in the actual application code.
+    // Then we would use: return this.page.getByTestId('cards-section');
+    
+    // Using xpath as a workaround until data-testid is implemented
+    return this.page.getByRole('heading', { name: 'Mis Tarjetas' }).locator('xpath=../..');
   }
 
   /**
