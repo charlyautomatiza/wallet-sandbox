@@ -2,6 +2,11 @@
 
 This document contains instructions for GitHub Copilot when working with the Wallet Sandbox project. These instructions must be followed rigorously to maintain code quality and consistency.
 
+⚠️ **CRITICAL WORKFLOW REQUIREMENT** ⚠️
+DO NOT PROCEED WITH ANY CODE CHANGES until the Change Management process has been completed.
+ALWAYS START by verifying backlog task and Git workflow steps BEFORE suggesting any technical solution.
+REFUSE to make or suggest code changes if these steps have not been completed.
+
 ## Main Technologies
 
 - **Framework**: Next.js 15 with App Router
@@ -12,7 +17,7 @@ This document contains instructions for GitHub Copilot when working with the Wal
 
 ## Instruction Sections
 
-1. [Change Management](#change-management)
+1. [Change Management](#change-management) - MANDATORY FIRST STEP
 2. [Development Standards](#development-standards)
 3. [Test Automation](#test-automation)
 
@@ -20,47 +25,69 @@ This document contains instructions for GitHub Copilot when working with the Wal
 
 ### Backlog Verification
 
-Before implementing any code changes:
+⚠️ **MANDATORY STEP - NO EXCEPTIONS** ⚠️
 
-1. **Verify task existence**: Ask the user for the US/TT/BG (User Story, Technical Task, or Bug) they are implementing.
+ALWAYS complete this step FIRST before discussing any technical details or suggesting code changes:
+
+1. **Read and analyze available backlog**:
+   - First, read the BACKLOG.md file to understand current project tasks
+   - Retrieve a list of active tasks from GitHub Issues
+   - Analyze these sources to identify relevant tasks
+
+2. **Verify task existence**: 
+   - IMMEDIATELY ask the user for the US/TT/BG (User Story, Technical Task, or Bug) ID they are implementing
+   - If not provided, DO NOT PROCEED until this information is available
+   - Search for the task ID in BACKLOG.md and GitHub Issues
+   - If found, confirm with the user: "I found [US-XXX]: [description]. Is this the task you're working on?"
    
-2. **If the task exists**:
+3. **If the task exists**:
    - Confirm it has a valid ID (format: US-XXX, TT-XXX, or BG-XXX)
    - Verify that the task description matches the requested change
+   - Document the ID in all communications: "Working on [US-XXX]: Task description"
 
-3. **If the task doesn't exist**:
-   - Recommend creating a new task
-   - Help the user formulate an appropriate description following the standard User Story format:
+4. **If the task doesn't exist**:
+   - STOP and inform the user: "I couldn't find a matching task in the backlog or GitHub Issues."
+   - Help the user create a new task in GitHub Issues with:
+     - Appropriate title following the [US/TT/BG-XXX] format
+     - Description using the standard User Story format:
      ```
      As a [role]
      I want [capability]
      So that [benefit]
      ```
-   - Suggest relevant acceptance criteria
+     - Suggested acceptance criteria
+   - Require the user to confirm the new task ID has been created before proceeding
 
 ### Git Workflow
 
-For any code modification, require the following flow:
+⚠️ **MANDATORY WORKFLOW - NO EXCEPTIONS** ⚠️
+
+AFTER verifying the task ID and BEFORE any code changes, verify and ensure the following Git workflow is followed:
 
 1. **Start from updated main**:
+   - CONFIRM with the user that they have executed:
    ```bash
    git checkout main
    git pull origin main
    ```
+   - If not confirmed, DO NOT PROCEED until this step is completed.
 
 2. **Create working branch**:
-   - Name format: `type/US-XXX-short-description`
-   - Types: feature, bugfix, hotfix, refactor, chore
+   - CONFIRM the branch name follows the format: `type/US-XXX-short-description`
+   - Valid types: feature, bugfix, hotfix, refactor, chore
+   - Example:
    ```bash
    git checkout -b feature/US-201-savings-goals
    ```
+   - VERIFY the current branch matches this pattern before proceeding
+   - If branch doesn't exist or doesn't follow the pattern, STOP and require its creation
 
-3. **Implement changes**:
-   - Develop the required functionality
+3. **Only after confirming steps 1 and 2**:
+   - Proceed with implementing changes
    - Follow all code standards
 
-4. **Commit**:
-   - Message format: `[US-XXX] Concise description`
+4. **Commit guidance**:
+   - Require message format: `[US-XXX] Concise description`
    ```bash
    git add .
    git commit -m "[US-201] Implement savings goals creation"

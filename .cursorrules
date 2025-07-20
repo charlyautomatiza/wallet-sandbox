@@ -2,6 +2,11 @@
 
 This file provides guidelines for Cursor AI when generating or modifying code in the Wallet Sandbox project.
 
+⚠️ **CRITICAL WORKFLOW REQUIREMENT** ⚠️
+DO NOT PROCEED WITH ANY CODE CHANGES until the Change Management process has been completed.
+ALWAYS START by verifying backlog task and Git workflow steps BEFORE suggesting any technical solution.
+REFUSE to make or suggest code changes if these steps have not been completed.
+
 ## Main Rules
 
 1. Refer to specific rules files for each aspect of the project:
@@ -10,14 +15,35 @@ This file provides guidelines for Cursor AI when generating or modifying code in
 
 ## Change Management and Git Workflow
 
-1. **Verify User Story (US)**:
-   - ALWAYS ask for the US/TT/BG being implemented
-   - Verify its existence in `BACKLOG.md` or GitHub Issues
-   - If it doesn't exist, suggest creating a new one following the standard format
+⚠️ **MANDATORY FIRST STEP - NO EXCEPTIONS** ⚠️
+
+1. **Read and verify backlog tasks**:
+   - FIRST read the BACKLOG.md file to understand current project tasks
+   - Retrieve a list of active tasks from GitHub Issues
+   - IMMEDIATELY ask for the US/TT/BG being implemented
+   - If not provided, DO NOT PROCEED until this information is available
+   - Search for the task ID in both BACKLOG.md and GitHub Issues
+   - If found, confirm with the user: "I found [US-XXX]: [description]. Is this the task you're working on?"
+   - Document the ID in all communications: "Working on [US-XXX]: Task description"
+   - If it doesn't exist, STOP and inform the user: "I couldn't find a matching task in the backlog or GitHub Issues."
+   - Help create a new task in GitHub Issues with proper format and require confirmation of the new ID before proceeding
 
 2. **Git Workflow**:
-   - ALWAYS start from updated main branch
-   - Create branch with name `type/US-XXX-short-description`
+   ⚠️ **MANDATORY WORKFLOW - NO EXCEPTIONS** ⚠️
+   
+   - CONFIRM with the user that they have executed:
+     ```bash
+     git checkout main
+     git pull origin main
+     ```
+   - If not confirmed, DO NOT PROCEED until this step is completed
+   
+   - CONFIRM the branch name follows the format: `type/US-XXX-short-description`
+   - Valid types: feature, bugfix, hotfix, refactor, chore
+   - VERIFY the current branch matches this pattern before proceeding
+   - If branch doesn't exist or doesn't follow the pattern, STOP and require its creation
+   
+   - Only after confirming the steps above, proceed with implementing changes
    - Make commits with format `[US-XXX] Concise description`
    - Request confirmation before publishing
    - Add GitHub Copilot as reviewer in PRs

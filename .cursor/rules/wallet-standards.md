@@ -2,9 +2,14 @@
 
 This file provides guidelines and rules for Cursor AI when working with the Wallet Sandbox project.
 
+⚠️ **CRITICAL WORKFLOW REQUIREMENT** ⚠️
+DO NOT PROCEED WITH ANY CODE CHANGES until the Change Management process has been completed.
+ALWAYS START by verifying backlog task and Git workflow steps BEFORE suggesting any technical solution.
+REFUSE to make or suggest code changes if these steps have not been completed.
+
 ## Sections
 
-1. [Change Management](#change-management)
+1. [Change Management](#change-management) - MANDATORY FIRST STEP
 2. [Next.js Standards](#nextjs-standards)
 3. [Playwright Test Standards](#playwright-test-standards)
 
@@ -12,24 +17,51 @@ This file provides guidelines and rules for Cursor AI when working with the Wall
 
 ### User Story Validation
 
-Before implementing any change:
+⚠️ **MANDATORY STEP - NO EXCEPTIONS** ⚠️
 
-1. **Verify task in backlog**:
-   - Ask the user for the US/TT/BG ID (User Story, Technical Task, Bug)
-   - Verify existence in GitHub Issues or another designated tracking system
-   - If it doesn't exist, suggest creating a new task in GitHub Issues following the standard format
+ALWAYS complete this step FIRST before discussing any technical details or suggesting code changes:
+
+1. **Read and analyze available backlog**:
+   - First, read the BACKLOG.md file to understand current project tasks
+   - Retrieve a list of active tasks from GitHub Issues
+   - Analyze these sources to identify relevant tasks
+
+2. **Verify task in backlog**:
+   - IMMEDIATELY ask the user for the US/TT/BG ID (User Story, Technical Task, Bug)
+   - If not provided, DO NOT PROCEED until this information is available
+   - Search for the task ID in BACKLOG.md and GitHub Issues
+   - If found, confirm with the user: "I found [US-XXX]: [description]. Is this the task you're working on?"
+   - Document the ID in all communications: "Working on [US-XXX]: Task description"
+   
+3. **Create task if none exists**:
+   - If it doesn't exist, STOP and inform the user: "I couldn't find a matching task in the backlog or GitHub Issues."
+   - Help the user create a new task in GitHub Issues with:
+     - Appropriate title following the [US/TT/BG-XXX] format
+     - Description using the standard User Story format
+     - Suggested acceptance criteria
+   - Require the user to confirm the new task ID has been created before proceeding
 
 2. **Git workflow**:
-   - Always start from the updated main branch
+   ⚠️ **MANDATORY WORKFLOW - NO EXCEPTIONS** ⚠️
+   
+   AFTER verifying the task ID and BEFORE any code changes:
+   
+   - CONFIRM with the user that they have executed:
    ```bash
    git checkout main
    git pull origin main
    ```
+   - If not confirmed, DO NOT PROCEED until this step is completed.
    
-   - Create branch with descriptive name
+   - CONFIRM the branch name follows the format: `type/US-XXX-short-description`
+   - Valid types: feature, bugfix, hotfix, refactor, chore
    ```bash
    git checkout -b feature/US-XXX-short-description
    ```
+   - VERIFY the current branch matches this pattern before proceeding
+   - If branch doesn't exist or doesn't follow the pattern, STOP and require its creation
+   
+   - Only after confirming the steps above, proceed with implementing changes
    
    - Use convention for commit messages
    ```bash
