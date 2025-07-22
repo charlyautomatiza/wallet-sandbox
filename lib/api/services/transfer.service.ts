@@ -1,16 +1,28 @@
 import { apiClient } from "../client"
 import { mockContacts, mockTransactions, mockAccount } from "../mock-data"
+import { storage, STORAGE_KEYS } from "../../storage"
 import type { ApiResponse, Contact, TransferRequest, TransferResponse, Transaction } from "../types"
 
 export class TransferService {
-  // Get contacts list
+  // Get contacts list (combining mock data with localStorage)
   static async getContacts(): Promise<ApiResponse<Contact[]>> {
     try {
       const response = await apiClient.get<Contact[]>("/transfers/contacts")
 
+      // Get stored contacts from localStorage
+      const storedContacts = storage.getItem<Contact[]>(STORAGE_KEYS.CONTACTS, [])
+
+      // Merge mock contacts with stored contacts, avoiding duplicates
+      const allContacts = [...mockContacts]
+      storedContacts.forEach((storedContact) => {
+        if (!allContacts.find((contact) => contact.id === storedContact.id)) {
+          allContacts.push(storedContact)
+        }
+      })
+
       return {
         success: true,
-        data: mockContacts,
+        data: allContacts,
         message: "Contacts retrieved successfully",
       }
     } catch (error) {
@@ -26,7 +38,14 @@ export class TransferService {
     try {
       const response = await apiClient.get<Contact>(`/transfers/contacts/${contactId}`)
 
-      const contact = mockContacts.find((c) => c.id === contactId)
+      // Check mock contacts first
+      let contact = mockContacts.find((c) => c.id === contactId)
+
+      // If not found in mock, check localStorage
+      if (!contact) {
+        const storedContacts = storage.getItem<Contact[]>(STORAGE_KEYS.CONTACTS, [])
+        contact = storedContacts.find((c) => c.id === contactId)
+      }
 
       if (!contact) {
         return {
@@ -46,6 +65,27 @@ export class TransferService {
         error: "Failed to retrieve contact",
       }
     }
+  }
+
+  // Get all transactions (mock + localStorage)
+  static getStoredTransactions(): Transaction[] {
+    return storage.getItem<Transaction[]>(STORAGE_KEYS.TRANSFERS, [])
+  }
+
+  // Save transaction to localStorage
+  static saveTransaction(transaction: Transaction): void {
+    const storedTransactions = this.getStoredTransactions()
+    storedTransactions.unshift(transaction)
+    storage.setItem(STORAGE_KEYS.TRANSFERS, storedTransactions)
+  }
+
+  // Get combined transactions (mock + localStorage)
+  static getCombinedTransactions(): Transaction[] {
+    const storedTransactions = this.getStoredTransactions()
+    const allTransactions = [...storedTransactions, ...mockTransactions]
+
+    // Sort by date (newest first)
+    return allTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   }
 
   // Process transfer
@@ -68,10 +108,12 @@ export class TransferService {
         transactionId: `txn_${Date.now()}`,
       }
 
-      // Update mock account balance
-      mockAccount.balance -= transferData.amount
+      // Update account balance (in a real app, this would be handled by the backend)
+      const currentBalance = mockAccount.balance
+      const newBalance = currentBalance - transferData.amount
+      mockAccount.balance = newBalance
 
-      // Add transaction to mock data
+      // Create transaction record
       const newTransaction: Transaction = {
         id: transferResponse.transactionId,
         type: "transfer",
@@ -81,10 +123,11 @@ export class TransferService {
         status: "completed",
         category: "Transferencias",
         contactName: transferData.contactName,
-        balance: mockAccount.balance,
+        balance: newBalance,
       }
 
-      mockTransactions.unshift(newTransaction)
+      // Save transaction to localStorage
+      this.saveTransaction(newTransaction)
 
       // Update contact's recent transfers
       const contact = mockContacts.find((c) => c.id === transferData.contactId)
@@ -112,12 +155,13 @@ export class TransferService {
     }
   }
 
-  // Get transfer history
+  // Get transfer history (combining mock and localStorage)
   static async getTransferHistory(limit = 10): Promise<ApiResponse<Transaction[]>> {
     try {
       const response = await apiClient.get<Transaction[]>(`/transfers/history?limit=${limit}`)
 
-      const transferTransactions = mockTransactions.filter((t) => t.type === "transfer").slice(0, limit)
+      const allTransactions = this.getCombinedTransactions()
+      const transferTransactions = allTransactions.filter((t) => t.type === "transfer").slice(0, limit)
 
       return {
         success: true,
@@ -143,7 +187,10 @@ export class TransferService {
         recentTransfers: [],
       }
 
-      mockContacts.push(newContact)
+      // Save to localStorage
+      const storedContacts = storage.getItem<Contact[]>(STORAGE_KEYS.CONTACTS, [])
+      storedContacts.push(newContact)
+      storage.setItem(STORAGE_KEYS.CONTACTS, storedContacts)
 
       return {
         success: true,
@@ -156,5 +203,11 @@ export class TransferService {
         error: "Failed to add contact",
       }
     }
+  }
+
+  // Clear localStorage (for testing purposes)
+  static clearStoredData(): void {
+    storage.removeItem(STORAGE_KEYS.TRANSFERS)
+    storage.removeItem(STORAGE_KEYS.CONTACTS)
   }
 }
