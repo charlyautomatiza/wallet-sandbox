@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { TransferService } from "@/lib/api/services/transfer.service"
-import { ArrowUpRight, ArrowDownLeft, RefreshCw, AlertCircle } from "lucide-react"
+import { RefreshCw, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, XCircle } from "lucide-react"
+import { fetchTransferHistory } from "@/store/transferSlice"
+import type { RootState, AppDispatch } from "@/store/store"
 import type { Transaction } from "@/lib/api/types"
 
 interface TransferHistoryProps {
@@ -17,42 +18,18 @@ interface TransferHistoryProps {
 }
 
 export default function TransferHistory({ limit = 10, showHeader = true, className = "" }: TransferHistoryProps) {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const dispatch = useDispatch<AppDispatch>()
+  const { transferHistory, isLoading, error } = useSelector((state: RootState) => state.transfer)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const fetchTransferHistory = async (showRefreshing = false) => {
-    try {
-      if (showRefreshing) {
-        setIsRefreshing(true)
-      } else {
-        setIsLoading(true)
-      }
-      setError(null)
-
-      const response = await TransferService.getTransferHistory(limit)
-
-      if (response.success) {
-        setTransactions(response.data)
-      } else {
-        setError(response.error || "Failed to load transfer history")
-      }
-    } catch (err) {
-      setError("An unexpected error occurred")
-      console.error("Transfer history error:", err)
-    } finally {
-      setIsLoading(false)
-      setIsRefreshing(false)
-    }
-  }
-
   useEffect(() => {
-    fetchTransferHistory()
-  }, [limit])
+    dispatch(fetchTransferHistory(limit))
+  }, [dispatch, limit])
 
-  const handleRefresh = () => {
-    fetchTransferHistory(true)
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await dispatch(fetchTransferHistory(limit))
+    setIsRefreshing(false)
   }
 
   const formatAmount = (amount: number) => {
@@ -73,85 +50,66 @@ export default function TransferHistory({ limit = 10, showHeader = true, classNa
     })
   }
 
-  const getTransactionIcon = (amount: number) => {
-    return amount < 0 ? (
-      <ArrowUpRight className="h-4 w-4 text-red-500" />
-    ) : (
-      <ArrowDownLeft className="h-4 w-4 text-green-500" />
-    )
+  const getTransactionIcon = (transaction: Transaction) => {
+    if (transaction.amount > 0) {
+      return <ArrowDownLeft className="h-4 w-4 text-green-600" />
+    }
+    return <ArrowUpRight className="h-4 w-4 text-red-600" />
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle className="h-4 w-4 text-green-600" />
+      case "pending":
+        return <Clock className="h-4 w-4 text-yellow-600" />
+      case "failed":
+        return <XCircle className="h-4 w-4 text-red-600" />
+      default:
+        return <Clock className="h-4 w-4 text-gray-600" />
+    }
   }
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      completed: { label: "Completada", variant: "default" as const },
-      pending: { label: "Pendiente", variant: "secondary" as const },
-      failed: { label: "Fallida", variant: "destructive" as const },
+    switch (status) {
+      case "completed":
+        return (
+          <Badge variant="secondary" className="bg-green-100 text-green-800">
+            Completada
+          </Badge>
+        )
+      case "pending":
+        return (
+          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+            Pendiente
+          </Badge>
+        )
+      case "failed":
+        return <Badge variant="destructive">Fallida</Badge>
+      default:
+        return <Badge variant="outline">{status}</Badge>
     }
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.completed
-
-    return (
-      <Badge variant={config.variant} className="text-xs">
-        {config.label}
-      </Badge>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <Card className={className}>
-        {showHeader && (
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Historial de Transferencias</span>
-              <Skeleton className="h-8 w-8 rounded-md" />
-            </CardTitle>
-          </CardHeader>
-        )}
-        <CardContent className="space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-20" />
-                </div>
-              </div>
-              <div className="text-right space-y-2">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-5 w-16" />
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    )
   }
 
   if (error) {
     return (
       <Card className={className}>
         {showHeader && (
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Historial de Transferencias</span>
-              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-              </Button>
-            </CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-lg font-semibold">Historial de Transferencias</CardTitle>
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            </Button>
           </CardHeader>
         )}
         <CardContent>
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              {error}
-              <Button variant="link" className="p-0 h-auto ml-2" onClick={handleRefresh}>
-                Intentar nuevamente
-              </Button>
-            </AlertDescription>
-          </Alert>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <XCircle className="h-12 w-12 text-red-500 mb-4" />
+            <p className="text-sm text-muted-foreground mb-4">{error}</p>
+            <Button onClick={handleRefresh} variant="outline" size="sm">
+              Reintentar
+            </Button>
+          </div>
         </CardContent>
       </Card>
     )
@@ -160,49 +118,69 @@ export default function TransferHistory({ limit = 10, showHeader = true, classNa
   return (
     <Card className={className}>
       {showHeader && (
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Historial de Transferencias</span>
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
-            </Button>
-          </CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-lg font-semibold">Historial de Transferencias</CardTitle>
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading || isRefreshing}>
+            <RefreshCw className={`h-4 w-4 ${isLoading || isRefreshing ? "animate-spin" : ""}`} />
+          </Button>
         </CardHeader>
       )}
       <CardContent>
-        {transactions.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <ArrowUpRight className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">No hay transferencias</p>
-            <p className="text-sm">Tus transferencias aparecerán aquí</p>
+        {isLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div key={index} className="flex items-center space-x-4">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : transferHistory.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <ArrowUpRight className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-sm text-muted-foreground mb-2">No hay transferencias recientes</p>
+            <p className="text-xs text-muted-foreground">
+              Tus transferencias aparecerán aquí una vez que realices alguna
+            </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {transactions.map((transaction) => (
+          <div className="space-y-4">
+            {transferHistory.slice(0, limit).map((transaction) => (
               <div
                 key={transaction.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
               >
                 <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0">{getTransactionIcon(transaction.amount)}</div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {transaction.contactName || transaction.description}
-                    </p>
+                  <div className="flex-shrink-0">{getTransactionIcon(transaction)}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{transaction.description}</p>
                     <div className="flex items-center space-x-2 mt-1">
                       <p className="text-xs text-muted-foreground">{formatDate(transaction.date)}</p>
-                      {getStatusBadge(transaction.status)}
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <p className="text-xs text-muted-foreground">{transaction.category}</p>
                     </div>
                   </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <p className={`text-sm font-semibold ${transaction.amount < 0 ? "text-red-600" : "text-green-600"}`}>
-                    {transaction.amount < 0 ? "-" : "+"}
-                    {formatAmount(transaction.amount)}
-                  </p>
-                  {transaction.balance && (
-                    <p className="text-xs text-muted-foreground">Saldo: {formatAmount(transaction.balance)}</p>
-                  )}
+                <div className="flex items-center space-x-3">
+                  <div className="text-right">
+                    <p
+                      className={`text-sm font-semibold ${transaction.amount > 0 ? "text-green-600" : "text-red-600"}`}
+                    >
+                      {transaction.amount > 0 ? "+" : ""}
+                      {formatAmount(transaction.amount)}
+                    </p>
+                    <div className="flex items-center justify-end space-x-1 mt-1">
+                      {getStatusIcon(transaction.status)}
+                      {getStatusBadge(transaction.status)}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

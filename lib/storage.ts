@@ -1,20 +1,20 @@
 export const STORAGE_KEYS = {
   TRANSFERS: "banking_transfers",
   CONTACTS: "banking_contacts",
-  ACCOUNT: "banking_account",
   USER_PREFERENCES: "banking_preferences",
+  ACCOUNT_DATA: "banking_account",
 } as const
 
 export const storage = {
-  getItem: <T>(key: string, fallback: T): T => {\
-    if (typeof window === 'undefined') return fallback
+  getItem: <T>(key: string, defaultValue: T): T => {\
+    if (typeof window === 'undefined') return defaultValue
     
     try {\
       const item = localStorage.getItem(key)
-      return item ? JSON.parse(item) : fallback
+      return item ? JSON.parse(item) : defaultValue
     } catch (error) {
       console.error(`Error reading from localStorage key "${key}":`, error)\
-      return fallback
+      return defaultValue
     }
   },
 
@@ -42,9 +42,7 @@ export const storage = {
     if (typeof window === 'undefined') return
     
     try {
-      Object.values(STORAGE_KEYS).forEach(key => {
-        localStorage.removeItem(key)
-      })
+      localStorage.clear()
     } catch (error) {
       console.error('Error clearing localStorage:', error)
     }

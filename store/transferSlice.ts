@@ -53,10 +53,8 @@ interface TransferState {
   contacts: Contact[]
   transferHistory: Transaction[]
   isLoading: boolean
-  isProcessing: boolean
   error: string | null
-  showOnlyUala: boolean
-  searchQuery: string
+  transferStatus: "idle" | "pending" | "success" | "failed"
 }
 
 const initialState: TransferState = {
@@ -67,10 +65,8 @@ const initialState: TransferState = {
   contacts: [],
   transferHistory: [],
   isLoading: false,
-  isProcessing: false,
   error: null,
-  showOnlyUala: false,
-  searchQuery: "",
+  transferStatus: "idle",
 }
 
 const transferSlice = createSlice({
@@ -92,26 +88,16 @@ const transferSlice = createSlice({
     setComment: (state, action: PayloadAction<string>) => {
       state.comment = action.payload
     },
-    setShowOnlyUala: (state, action: PayloadAction<boolean>) => {
-      state.showOnlyUala = action.payload
-    },
-    setSearchQuery: (state, action: PayloadAction<string>) => {
-      state.searchQuery = action.payload
-    },
-    resetTransfer: (state) => {
+    clearTransferForm: (state) => {
       state.selectedContact = null
       state.amount = 0
       state.reason = ""
       state.comment = ""
-      state.isLoading = false
+      state.transferStatus = "idle"
       state.error = null
     },
     clearError: (state) => {
       state.error = null
-    },
-    syncWithLocalStorage: (state) => {
-      const combinedTransactions = TransferService.getCombinedTransactions()
-      state.transferHistory = combinedTransactions.filter((t) => t.type === "transfer")
     },
   },
   extraReducers: (builder) => {
@@ -153,21 +139,27 @@ const transferSlice = createSlice({
         state.error = action.error.message || "Failed to fetch transfer history"
       })
       .addCase(processTransfer.pending, (state) => {
-        state.isProcessing = true
+        state.transferStatus = "pending"
         state.error = null
       })
       .addCase(processTransfer.fulfilled, (state, action) => {
-        state.isProcessing = false
-        state.selectedContact = null
-        state.amount = 0
-        state.reason = ""
-        state.comment = ""
-        const combinedTransactions = TransferService.getCombinedTransactions()
-        state.transferHistory = combinedTransactions.filter((t) => t.type === "transfer")
+        state.transferStatus = "success"
+        const newTransaction: Transaction = {
+          id: action.payload.transactionId,
+          type: "transfer",
+          amount: -action.payload.amount,
+          description: `Transferencia a ${action.payload.contactName}`,
+          date: new Date().toISOString().split("T")[0],
+          status: "completed",
+          category: "Transferencias",
+          contactName: action.payload.contactName,
+          balance: 0,
+        }
+        state.transferHistory.unshift(newTransaction)
       })
       .addCase(processTransfer.rejected, (state, action) => {
-        state.isProcessing = false
-        state.error = action.error.message || "Failed to process transfer"
+        state.transferStatus = "failed"
+        state.error = action.error.message || "Transfer failed"
       })
       .addCase(addContact.pending, (state) => {
         state.isLoading = true
@@ -184,17 +176,8 @@ const transferSlice = createSlice({
   },
 })
 
-export const {
-  setSelectedContact,
-  setAmount,
-  setReason,
-  setComment,
-  setShowOnlyUala,
-  setSearchQuery,
-  resetTransfer,
-  clearError,
-  syncWithLocalStorage,
-} = transferSlice.actions
+export const { setSelectedContact, setAmount, setReason, setComment, clearTransferForm, clearError } =
+  transferSlice.actions
 
 export const transferReducer = transferSlice.reducer
 
@@ -203,17 +186,13 @@ export const selectContacts = (state: { transfer: TransferState }) => state.tran
 export const selectSelectedContact = (state: { transfer: TransferState }) => state.transfer.selectedContact
 export const selectTransferHistory = (state: { transfer: TransferState }) => state.transfer.transferHistory
 export const selectIsLoading = (state: { transfer: TransferState }) => state.transfer.isLoading
-export const selectIsProcessing = (state: { transfer: TransferState }) => state.transfer.isProcessing
+export const selectTransferStatus = (state: { transfer: TransferState }) => state.transfer.transferStatus
 export const selectError = (state: { transfer: TransferState }) => state.transfer.error
 
 export const selectFilteredContacts = (state: { transfer: TransferState }) => {
-  const { contacts, showOnlyUala, searchQuery } = state.transfer
+  const { contacts, searchQuery } = state.transfer
 
   let filtered = contacts
-
-  if (showOnlyUala) {
-    filtered = filtered.filter((contact) => contact.hasUala)
-  }
 
   if (searchQuery) {
     const query = searchQuery.toLowerCase()
