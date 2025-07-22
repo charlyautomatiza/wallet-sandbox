@@ -74,4 +74,25 @@ export class HomePage {
   getQuickActionButtons() {
     return this.page.getByRole('link', { name: /Ingresar|Transferir/i });
   }
+
+  /**
+   * Navigate to transfer page
+   */
+  async navigateToTransfer() {
+    await this.page.getByRole('main').getByRole('link', { name: 'Transferir' }).click();
+  }
+
+  /**
+   * Navigate to recharge page
+   */
+  async navigateToRecharge() {
+    await this.page.getByRole('main').getByRole('link', { name: 'Ingresar' }).click();
+  }
+
+  /**
+   * Get navigation menu item
+   */
+  getNavMenuItem(name: string) {
+    return this.page.getByRole('link', { name });
+  }
 }

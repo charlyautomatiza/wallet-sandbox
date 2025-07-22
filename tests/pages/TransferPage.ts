@@ -1,8 +1,5 @@
-import { Page } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 
-/**
- * TransferPage Page Object Model - Represents the transfer flow pages
- */
 export class TransferPage {
   readonly page: Page;
 
@@ -10,143 +7,129 @@ export class TransferPage {
     this.page = page;
   }
 
-  /**
-   * Navigate to the transfer page
-   */
+  // Navigation
   async goto() {
     await this.page.goto('/transfer');
   }
 
-  /**
-   * Get the tab button for users with wallet
-   */
-  getHasWalletTabButton() {
-    return this.page.getByRole('tab', { name: /Tiene wallet/i }).first();
+  // Tab Controls
+  getHasWalletTabButton(): Locator {
+    // Use first() to handle potential duplicates and be more specific
+    return this.page.locator('button').filter({ hasText: 'Tiene Ualá' }).first();
   }
 
-  /**
-   * Get the tab button for users without wallet
-   */
-  getNoWalletTabButton() {
-    return this.page.getByRole('tab', { name: /No tiene wallet/i }).first();
+  getNoWalletTabButton(): Locator {
+    // Use first() to handle potential duplicates and be more specific
+    return this.page.locator('button').filter({ hasText: 'No tiene Ualá' }).first();
   }
 
-  /**
-   * Get the search input field
-   */
-  getSearchInput() {
-    return this.page.getByPlaceholder('Buscar contactos');
+  // Search Functionality
+  getSearchInput(): Locator {
+    return this.page.getByPlaceholder('Nombre de usuario');
   }
 
-  /**
-   * Search for a contact
-   * @param name - Name of the contact to search for
-   */
-  async searchContact(name: string) {
-    await this.getSearchInput().fill(name);
+  async searchContact(contactName: string) {
+    await this.getSearchInput().fill(contactName);
   }
 
-  /**
-   * Get a contact by name
-   * @param name - Name of the contact to find
-   */
-  getContact(name: string) {
-    // Use a more specific selector that targets contact items
-    return this.page.getByTestId('contact-item').filter({ hasText: name }).first();
+  // Contact Selection
+  async selectContact(contactName: string) {
+    await this.page.getByRole('link').filter({ hasText: contactName }).click();
   }
 
-  /**
-   * Select a contact by name
-   * @param name - Name of the contact to select
-   */
-  async selectContact(name: string) {
-    await this.getContact(name).click();
+  getContactItem(contactName: string): Locator {
+    return this.page.getByRole('link').filter({ hasText: contactName });
   }
 
-  /**
-   * Get the transfer button on the contact details page
-   */
-  getTransferButton() {
-    return this.page.getByRole('link', { name: /Transferir/i });
+  // Transfer Actions
+  getTransferButton(): Locator {
+    // The button has an aria-label "Enviar dinero a [name]" and text "Enviar plata"
+    return this.page.getByRole('button').filter({ hasText: 'Enviar plata' });
   }
 
-  /**
-   * Get the amount input field
-   */
-  getAmountInput() {
-    return this.page.locator('input[inputmode="numeric"]');
+  getContinueButton(): Locator {
+    return this.page.getByRole('button', { name: 'Continuar' });
   }
 
-  /**
-   * Enter transfer amount
-   * @param amount - Amount to transfer
-   */
+  getConfirmButton(): Locator {
+    return this.page.getByRole('button', { name: 'Confirmar' });
+  }
+
+  // Amount Input (on amount page)
+  getAmountInput(): Locator {
+    return this.page.getByLabel('Monto a transferir');
+  }
+
   async enterAmount(amount: string) {
     await this.getAmountInput().fill(amount);
   }
 
-  /**
-   * Get the continue button on the amount page
-   */
-  getContinueButton() {
-    return this.page.getByRole('button', { name: /Continuar/i });
-  }
-
-  /**
-   * Get the confirm button on the confirmation page
-   */
-  getConfirmButton() {
-    return this.page.getByRole('button', { name: /Confirmar transferencia/i });
-  }
-
-  /**
-   * Get the success message on the success page
-   */
-  getSuccessMessage() {
-    return this.page.getByText('Transferencia exitosa');
-  }
-
-  /**
-   * Complete a transfer flow
-   * @param contactName - Name of the contact to transfer to
-   * @param amount - Amount to transfer
-   * @param hasWallet - Whether the contact has a wallet
-   */
-  async completeTransfer(contactName: string, amount: string, hasWallet = true) {
-    await this.goto();
-    
-    if (hasWallet) {
-      await this.getHasWalletTabButton().click();
-    } else {
-      await this.getNoWalletTabButton().click();
-    }
-    
-    await this.searchContact(contactName);
-    await this.selectContact(contactName);
-    await this.getTransferButton().click();
-    await this.enterAmount(amount);
-    await this.getContinueButton().click();
-    await this.getConfirmButton().click();
-    
-    // Wait for success message
-    return this.getSuccessMessage();
-  }
-
-  /**
-   * Get the transfer details on confirmation page
-   */
+  // Transfer Details on Confirmation Screen
   getTransferDetails() {
     return {
       recipientName: this.page.getByTestId('recipient-name'),
       amount: this.page.getByTestId('transfer-amount'),
-      fee: this.page.getByTestId('transfer-fee')
+      fee: this.page.getByTestId('transfer-fee'),
+      total: this.page.getByTestId('transfer-total')
     };
   }
 
-  /**
-   * Get any error message displayed during the transfer flow
-   */
-  getErrorMessage() {
-    return this.page.getByText('Error', { exact: false }).first();
+  // Messages
+  getSuccessMessage(): Locator {
+    return this.page.getByText('Transferencia exitosa');
+  }
+
+  getErrorMessage(): Locator {
+    return this.page.getByRole('alert');
+  }
+
+  // Contact Information Display
+  getContactName(): Locator {
+    return this.page.getByRole('heading', { level: 1 });
+  }
+
+  getContactInitials(): Locator {
+    return this.page.locator('.bg-white.rounded-full');
+  }
+
+  // Recent Transfers
+  getRecentTransfersList(): Locator {
+    return this.page.getByTestId('recent-transfers');
+  }
+
+  getRecentTransferItem(index: number): Locator {
+    return this.page.locator('.border-b').nth(index);
+  }
+
+  // Navigation Actions
+  async goBack() {
+    await this.page.getByRole('link', { name: 'Volver' }).click();
+  }
+
+  async goToHome() {
+    await this.page.getByRole('link', { name: 'Inicio' }).click();
+  }
+
+  // Validation Helpers
+  async isHasWalletTabActive(): Promise<boolean> {
+    const tabButton = this.getHasWalletTabButton();
+    const classList = await tabButton.getAttribute('class');
+    return classList?.includes('bg-white') || false;
+  }
+
+  async isNoWalletTabActive(): Promise<boolean> {
+    const tabButton = this.getNoWalletTabButton();
+    const classList = await tabButton.getAttribute('class');
+    return classList?.includes('bg-white') || false;
+  }
+
+  // Wait for specific states
+  async waitForContactsToLoad() {
+    // Wait for contacts section to be present
+    await this.page.locator('h2:has-text("CONTACTOS")').waitFor({ state: 'visible' });
+  }
+
+  async waitForTransferSuccess() {
+    await this.getSuccessMessage().waitFor({ state: 'visible' });
   }
 }
