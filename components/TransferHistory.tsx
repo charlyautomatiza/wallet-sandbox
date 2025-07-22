@@ -1,14 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { RefreshCw, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, XCircle } from "lucide-react"
-import { fetchTransferHistory } from "@/store/transferSlice"
-import type { RootState, AppDispatch } from "@/store/store"
+import { TransferService } from "@/lib/api/services/transfer.service"
 import type { Transaction } from "@/lib/api/types"
 
 interface TransferHistoryProps {
@@ -17,19 +15,43 @@ interface TransferHistoryProps {
   className?: string
 }
 
-export default function TransferHistory({ limit = 10, showHeader = true, className = "" }: TransferHistoryProps) {
-  const dispatch = useDispatch<AppDispatch>()
-  const { transferHistory, isLoading, error } = useSelector((state: RootState) => state.transfer)
+export function TransferHistory({ limit = 10, showHeader = true, className = "" }: TransferHistoryProps) {
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  useEffect(() => {
-    dispatch(fetchTransferHistory(limit))
-  }, [dispatch, limit])
+  const fetchTransferHistory = async (showRefreshLoader = false) => {
+    try {
+      if (showRefreshLoader) {
+        setIsRefreshing(true)
+      } else {
+        setIsLoading(true)
+      }
+      setError(null)
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true)
-    await dispatch(fetchTransferHistory(limit))
-    setIsRefreshing(false)
+      const result = await TransferService.getTransferHistory(limit)
+
+      if (result.success && result.data) {
+        setTransactions(result.data)
+      } else {
+        setError(result.error || "Failed to load transfer history")
+      }
+    } catch (err) {
+      setError("An unexpected error occurred")
+      console.error("Transfer history error:", err)
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTransferHistory()
+  }, [limit])
+
+  const handleRefresh = () => {
+    fetchTransferHistory(true)
   }
 
   const formatAmount = (amount: number) => {
@@ -50,52 +72,82 @@ export default function TransferHistory({ limit = 10, showHeader = true, classNa
     })
   }
 
-  const getTransactionIcon = (transaction: Transaction) => {
-    if (transaction.amount > 0) {
-      return <ArrowDownLeft className="h-4 w-4 text-green-600" />
+  const getTransactionIcon = (type: string, amount: number) => {
+    if (type === "transfer") {
+      return amount < 0 ? (
+        <ArrowUpRight className="h-4 w-4 text-red-500" />
+      ) : (
+        <ArrowDownLeft className="h-4 w-4 text-green-500" />
+      )
     }
-    return <ArrowUpRight className="h-4 w-4 text-red-600" />
+    return amount < 0 ? (
+      <ArrowUpRight className="h-4 w-4 text-red-500" />
+    ) : (
+      <ArrowDownLeft className="h-4 w-4 text-green-500" />
+    )
   }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-green-500" />
       case "pending":
-        return <Clock className="h-4 w-4 text-yellow-600" />
+        return <Clock className="h-4 w-4 text-yellow-500" />
       case "failed":
-        return <XCircle className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-4 w-4 text-red-500" />
       default:
-        return <Clock className="h-4 w-4 text-gray-600" />
+        return <Clock className="h-4 w-4 text-gray-500" />
     }
   }
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "completed":
-        return (
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            Completada
-          </Badge>
-        )
+        return "default"
       case "pending":
-        return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-            Pendiente
-          </Badge>
-        )
+        return "secondary"
       case "failed":
-        return <Badge variant="destructive">Fallida</Badge>
+        return "destructive"
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return "outline"
     }
+  }
+
+  if (isLoading) {
+    return (
+      <Card className={className}>
+        {showHeader && (
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-lg font-semibold">Historial de Transferencias</CardTitle>
+            <Skeleton className="h-9 w-9 rounded-md" />
+          </CardHeader>
+        )}
+        <CardContent className="space-y-4">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
+              <div className="flex items-center space-x-3">
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </div>
+              <div className="text-right space-y-2">
+                <Skeleton className="h-4 w-16 ml-auto" />
+                <Skeleton className="h-3 w-12 ml-auto" />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    )
   }
 
   if (error) {
     return (
       <Card className={className}>
         {showHeader && (
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle className="text-lg font-semibold">Historial de Transferencias</CardTitle>
             <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
               <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
@@ -103,12 +155,34 @@ export default function TransferHistory({ limit = 10, showHeader = true, classNa
           </CardHeader>
         )}
         <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <XCircle className="h-12 w-12 text-red-500 mb-4" />
+          <div className="text-center py-8">
+            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
-            <Button onClick={handleRefresh} variant="outline" size="sm">
+            <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
               Reintentar
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <Card className={className}>
+        {showHeader && (
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-lg font-semibold">Historial de Transferencias</CardTitle>
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            </Button>
+          </CardHeader>
+        )}
+        <CardContent>
+          <div className="text-center py-8">
+            <ArrowUpRight className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground">No hay transferencias recientes</p>
           </div>
         </CardContent>
       </Card>
@@ -118,72 +192,62 @@ export default function TransferHistory({ limit = 10, showHeader = true, classNa
   return (
     <Card className={className}>
       {showHeader && (
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle className="text-lg font-semibold">Historial de Transferencias</CardTitle>
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading || isRefreshing}>
-            <RefreshCw className={`h-4 w-4 ${isLoading || isRefreshing ? "animate-spin" : ""}`} />
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
           </Button>
         </CardHeader>
       )}
-      <CardContent>
-        {isLoading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className="flex items-center space-x-4">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-3 w-16" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : transferHistory.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <ArrowUpRight className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-sm text-muted-foreground mb-2">No hay transferencias recientes</p>
-            <p className="text-xs text-muted-foreground">
-              Tus transferencias aparecerán aquí una vez que realices alguna
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {transferHistory.slice(0, limit).map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0">{getTransactionIcon(transaction)}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{transaction.description}</p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <p className="text-xs text-muted-foreground">{formatDate(transaction.date)}</p>
+      <CardContent className="space-y-3">
+        {transactions.map((transaction) => (
+          <div
+            key={transaction.id}
+            className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">{getTransactionIcon(transaction.type, transaction.amount)}</div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{transaction.description}</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  <p className="text-xs text-muted-foreground">{formatDate(transaction.date)}</p>
+                  {transaction.contactName && (
+                    <>
                       <span className="text-xs text-muted-foreground">•</span>
-                      <p className="text-xs text-muted-foreground">{transaction.category}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="text-right">
-                    <p
-                      className={`text-sm font-semibold ${transaction.amount > 0 ? "text-green-600" : "text-red-600"}`}
-                    >
-                      {transaction.amount > 0 ? "+" : ""}
-                      {formatAmount(transaction.amount)}
-                    </p>
-                    <div className="flex items-center justify-end space-x-1 mt-1">
-                      {getStatusIcon(transaction.status)}
-                      {getStatusBadge(transaction.status)}
-                    </div>
-                  </div>
+                      <p className="text-xs text-muted-foreground truncate">{transaction.contactName}</p>
+                    </>
+                  )}
                 </div>
               </div>
-            ))}
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="text-right">
+                <p className={`text-sm font-semibold ${transaction.amount < 0 ? "text-red-600" : "text-green-600"}`}>
+                  {transaction.amount < 0 ? "-" : "+"}
+                  {formatAmount(transaction.amount)}
+                </p>
+                <div className="flex items-center justify-end space-x-1 mt-1">
+                  {getStatusIcon(transaction.status)}
+                  <Badge variant={getStatusBadgeVariant(transaction.status)} className="text-xs">
+                    {transaction.status === "completed"
+                      ? "Completada"
+                      : transaction.status === "pending"
+                        ? "Pendiente"
+                        : transaction.status === "failed"
+                          ? "Fallida"
+                          : "Desconocido"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {transactions.length >= limit && (
+          <div className="text-center pt-4">
+            <Button variant="outline" size="sm">
+              Ver más transferencias
+            </Button>
           </div>
         )}
       </CardContent>

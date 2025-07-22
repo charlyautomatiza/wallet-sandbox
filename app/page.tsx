@@ -1,60 +1,64 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useDispatch, useSelector } from "react-redux"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
-  Send,
-  Download,
-  Scan,
-  CreditCard,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Plus,
+  QrCode,
   TrendingUp,
   Eye,
   EyeOff,
-  ArrowUpRight,
+  RefreshCw,
   Users,
   DollarSign,
   Activity,
 } from "lucide-react"
-import { fetchContacts, fetchTransferHistory } from "@/store/transferSlice"
+import Link from "next/link"
+import { TransferHistory } from "@/components/TransferHistory"
 import { AccountService } from "@/lib/api/services/account.service"
-import TransferHistory from "@/components/TransferHistory"
-import type { RootState, AppDispatch } from "@/store/store"
-import type { Account } from "@/lib/api/types"
+import { TransferService } from "@/lib/api/services/transfer.service"
+import type { Account, Contact } from "@/lib/api/types"
 
 export default function HomePage() {
-  const router = useRouter()
-  const dispatch = useDispatch<AppDispatch>()
-  const { contacts, transferHistory, isLoading } = useSelector((state: RootState) => state.transfer)
-
   const [account, setAccount] = useState<Account | null>(null)
-  const [showBalance, setShowBalance] = useState(true)
-  const [accountLoading, setAccountLoading] = useState(true)
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Fetch account data
-    const fetchAccount = async () => {
+    const fetchData = async () => {
       try {
-        const response = await AccountService.getAccount()
-        if (response.success) {
-          setAccount(response.data)
+        setIsLoading(true)
+        setError(null)
+
+        const [accountResult, contactsResult] = await Promise.all([
+          AccountService.getAccount(),
+          TransferService.getContacts(),
+        ])
+
+        if (accountResult.success && accountResult.data) {
+          setAccount(accountResult.data)
         }
-      } catch (error) {
-        console.error("Error fetching account:", error)
+
+        if (contactsResult.success && contactsResult.data) {
+          setContacts(contactsResult.data.filter((contact) => contact.isFrequent))
+        }
+      } catch (err) {
+        setError("Error al cargar los datos")
+        console.error("Homepage data fetch error:", err)
       } finally {
-        setAccountLoading(false)
+        setIsLoading(false)
       }
     }
 
-    fetchAccount()
-    dispatch(fetchContacts())
-    dispatch(fetchTransferHistory(5))
-  }, [dispatch])
+    fetchData()
+  }, [])
 
   const formatBalance = (balance: number) => {
     return new Intl.NumberFormat("es-AR", {
@@ -65,185 +69,179 @@ export default function HomePage() {
     }).format(balance)
   }
 
-  const getInitials = (name: string) => {
+  const getContactInitials = (name: string) => {
     return name
       .split(" ")
-      .map((word) => word[0])
+      .map((word) => word.charAt(0))
       .join("")
       .toUpperCase()
       .slice(0, 2)
   }
 
-  const frequentContacts = contacts.filter((contact) => contact.isFrequent).slice(0, 4)
-  const recentTransfers = transferHistory.slice(0, 3)
+  const toggleBalanceVisibility = () => {
+    setIsBalanceVisible(!isBalanceVisible)
+  }
 
-  const quickActions = [
-    {
-      icon: Send,
-      label: "Transferir",
-      description: "Enviar dinero",
-      href: "/transfer",
-      color: "bg-blue-500 hover:bg-blue-600",
-    },
-    {
-      icon: Download,
-      label: "Pedir",
-      description: "Solicitar dinero",
-      href: "/request",
-      color: "bg-green-500 hover:bg-green-600",
-    },
-    {
-      icon: Scan,
-      label: "Escanear",
-      description: "Código QR",
-      href: "/scan",
-      color: "bg-purple-500 hover:bg-purple-600",
-    },
-    {
-      icon: CreditCard,
-      label: "Recargar",
-      description: "Agregar dinero",
-      href: "/recharge",
-      color: "bg-orange-500 hover:bg-orange-600",
-    },
-  ]
-
-  return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold">¡Hola!</h1>
-              <p className="text-blue-100">Bienvenido a tu banco digital</p>
-            </div>
-            <Avatar className="h-12 w-12">
-              <AvatarImage src="/placeholder-user.jpg" alt="Usuario" />
-              <AvatarFallback>JP</AvatarFallback>
-            </Avatar>
-          </div>
-
-          {/* Balance Card */}
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-md mx-auto space-y-6">
+          {/* Balance Card Skeleton */}
+          <Card>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-blue-100 text-sm">Saldo disponible</p>
-                  <div className="flex items-center space-x-2">
-                    {accountLoading ? (
-                      <Skeleton className="h-8 w-32 bg-white/20" />
-                    ) : (
-                      <h2 className="text-3xl font-bold">
-                        {showBalance ? formatBalance(account?.balance || 0) : "••••••"}
-                      </h2>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowBalance(!showBalance)}
-                      className="text-white hover:bg-white/20"
-                    >
-                      {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                  </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
+                  <div className="h-6 w-6 bg-gray-200 rounded animate-pulse" />
                 </div>
-                <div className="text-right">
-                  <p className="text-blue-100 text-sm">Cuenta</p>
-                  <p className="text-lg font-semibold">
-                    {account?.accountNumber ? `****${account.accountNumber.slice(-4)}` : "****"}
-                  </p>
-                </div>
+                <div className="h-8 w-32 bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="flex items-center space-x-4 text-sm">
-                <div className="flex items-center space-x-1">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>+2.5% este mes</span>
+          {/* Quick Actions Skeleton */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-2 gap-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="flex flex-col items-center space-y-2">
+                    <div className="h-12 w-12 bg-gray-200 rounded-full animate-pulse" />
+                    <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stats Cards Skeleton */}
+          <div className="grid grid-cols-2 gap-4">
+            {Array.from({ length: 2 }).map((_, index) => (
+              <Card key={index}>
+                <CardContent className="p-4">
+                  <div className="space-y-2">
+                    <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-6 w-20 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="max-w-md mx-auto">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="space-y-4">
+                <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto">
+                  <RefreshCw className="h-6 w-6 text-red-600" />
                 </div>
-                <Badge variant="secondary" className="bg-green-500/20 text-green-100 border-green-400/30">
-                  Activa
-                </Badge>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Error al cargar</h3>
+                  <p className="text-sm text-gray-600 mt-1">{error}</p>
+                </div>
+                <Button onClick={() => window.location.reload()}>Reintentar</Button>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+    )
+  }
 
-      <div className="container mx-auto px-4 -mt-4">
+  return (
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-md mx-auto space-y-6">
+        {/* Balance Card */}
+        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium opacity-90">Saldo disponible</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleBalanceVisibility}
+                  className="text-white hover:bg-white/20 h-8 w-8 p-0"
+                >
+                  {isBalanceVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
+              <div>
+                <p className="text-3xl font-bold">
+                  {isBalanceVisible && account ? formatBalance(account.balance) : "••••••"}
+                </p>
+                <p className="text-sm opacity-75 mt-1">
+                  Cuenta {account?.accountNumber ? `****${account.accountNumber.slice(-4)}` : "****"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Quick Actions */}
-        <Card className="mb-6">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg">Acciones rápidas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {quickActions.map((action) => (
-                <Button
-                  key={action.label}
-                  variant="outline"
-                  className="h-auto p-4 flex flex-col items-center space-y-2 hover:shadow-md transition-all bg-transparent"
-                  onClick={() => router.push(action.href)}
-                >
-                  <div className={`p-3 rounded-full text-white ${action.color}`}>
-                    <action.icon className="h-6 w-6" />
-                  </div>
-                  <div className="text-center">
-                    <p className="font-semibold text-sm">{action.label}</p>
-                    <p className="text-xs text-muted-foreground">{action.description}</p>
-                  </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Link href="/transfer">
+                <Button variant="outline" className="h-20 flex-col space-y-2 w-full bg-transparent">
+                  <ArrowUpRight className="h-6 w-6" />
+                  <span className="text-sm">Transferir</span>
                 </Button>
-              ))}
+              </Link>
+              <Link href="/request">
+                <Button variant="outline" className="h-20 flex-col space-y-2 w-full bg-transparent">
+                  <ArrowDownLeft className="h-6 w-6" />
+                  <span className="text-sm">Solicitar</span>
+                </Button>
+              </Link>
+              <Link href="/scan">
+                <Button variant="outline" className="h-20 flex-col space-y-2 w-full bg-transparent">
+                  <QrCode className="h-6 w-6" />
+                  <span className="text-sm">Escanear</span>
+                </Button>
+              </Link>
+              <Link href="/recharge">
+                <Button variant="outline" className="h-20 flex-col space-y-2 w-full bg-transparent">
+                  <Plus className="h-6 w-6" />
+                  <span className="text-sm">Recargar</span>
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="h-5 w-5 text-blue-600" />
-                </div>
+                <Users className="h-5 w-5 text-blue-600" />
                 <div>
                   <p className="text-sm text-muted-foreground">Contactos</p>
-                  <p className="text-2xl font-bold">{contacts.length}</p>
+                  <p className="text-xl font-semibold">{contacts.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center space-x-2">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-green-600" />
-                </div>
+                <Activity className="h-5 w-5 text-green-600" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Transferencias</p>
-                  <p className="text-2xl font-bold">{transferHistory.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Activity className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Este mes</p>
-                  <p className="text-2xl font-bold">
-                    {
-                      transferHistory.filter((t) => {
-                        const transactionDate = new Date(t.date)
-                        const currentDate = new Date()
-                        return transactionDate.getMonth() === currentDate.getMonth()
-                      }).length
-                    }
-                  </p>
+                  <p className="text-sm text-muted-foreground">Activo</p>
+                  <Badge variant="default" className="text-xs">
+                    Verificado
+                  </Badge>
                 </div>
               </div>
             </CardContent>
@@ -251,35 +249,30 @@ export default function HomePage() {
         </div>
 
         {/* Frequent Contacts */}
-        {frequentContacts.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        {contacts.length > 0 && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <CardTitle className="text-lg">Contactos frecuentes</CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => router.push("/transfer")}>
-                Ver todos
-                <ArrowUpRight className="h-4 w-4 ml-1" />
-              </Button>
+              <Link href="/transfer">
+                <Button variant="ghost" size="sm">
+                  Ver todos
+                </Button>
+              </Link>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {frequentContacts.map((contact) => (
-                  <Button
-                    key={contact.id}
-                    variant="outline"
-                    className="h-auto p-4 flex flex-col items-center space-y-2 bg-transparent"
-                    onClick={() => router.push(`/transfer/${contact.id}`)}
-                  >
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={contact.avatar || "/placeholder.svg"} alt={contact.name} />
-                      <AvatarFallback>{getInitials(contact.name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="text-center">
-                      <p className="font-semibold text-sm truncate w-full">{contact.name}</p>
-                      {contact.recentTransfers.length > 0 && (
-                        <p className="text-xs text-muted-foreground">Último: {contact.recentTransfers[0].date}</p>
-                      )}
+              <div className="flex space-x-4 overflow-x-auto pb-2">
+                {contacts.slice(0, 6).map((contact) => (
+                  <Link key={contact.id} href={`/transfer/${contact.id}`}>
+                    <div className="flex flex-col items-center space-y-2 min-w-[60px] cursor-pointer hover:opacity-75 transition-opacity">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={contact.avatar || "/placeholder.svg"} alt={contact.name} />
+                        <AvatarFallback className="bg-blue-100 text-blue-600 text-sm">
+                          {getContactInitials(contact.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <p className="text-xs text-center font-medium truncate w-full">{contact.name.split(" ")[0]}</p>
                     </div>
-                  </Button>
+                  </Link>
                 ))}
               </div>
             </CardContent>
@@ -287,23 +280,43 @@ export default function HomePage() {
         )}
 
         {/* Investment Summary */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Resumen de inversiones</CardTitle>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-lg">Inversiones</CardTitle>
+            <Link href="/invest">
+              <Button variant="ghost" size="sm">
+                Ver más
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Rendimiento total</p>
-                <p className="text-2xl font-bold text-green-600">+$12,450</p>
-                <p className="text-sm text-green-600">+8.2% este año</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="text-sm font-medium">Plazo Fijo</p>
+                    <p className="text-xs text-muted-foreground">30 días • 45% TNA</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold">$50.000</p>
+                  <p className="text-xs text-green-600">+$1.850</p>
+                </div>
               </div>
-              <Button
-                onClick={() => router.push("/invest")}
-                className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
-              >
-                Ver detalles
-              </Button>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <DollarSign className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <p className="text-sm font-medium">Fondo Común</p>
+                    <p className="text-xs text-muted-foreground">Renta Variable</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-semibold">$25.000</p>
+                  <p className="text-xs text-red-600">-$320</p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

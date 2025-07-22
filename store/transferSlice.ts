@@ -2,12 +2,16 @@ import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/tool
 import { TransferService } from "@/lib/api/services/transfer.service"
 import type { Contact, Transaction, TransferRequest } from "@/lib/api/types"
 
-export const fetchContacts = createAsyncThunk("transfer/fetchContacts", async () => {
-  const response = await TransferService.getContacts()
-  if (!response.success) {
-    throw new Error(response.error)
+export const fetchContacts = createAsyncThunk("transfer/fetchContacts", async (_, { rejectWithValue }) => {
+  try {
+    const result = await TransferService.getContacts()
+    if (!result.success) {
+      return rejectWithValue(result.error)
+    }
+    return result.data
+  } catch (error) {
+    return rejectWithValue("Failed to fetch contacts")
   }
-  return response.data
 })
 
 export const fetchContact = createAsyncThunk("transfer/fetchContact", async (contactId: string) => {
@@ -18,30 +22,48 @@ export const fetchContact = createAsyncThunk("transfer/fetchContact", async (con
   return response.data
 })
 
-export const processTransfer = createAsyncThunk("transfer/processTransfer", async (transferData: TransferRequest) => {
-  const response = await TransferService.processTransfer(transferData)
-  if (!response.success) {
-    throw new Error(response.error)
-  }
-  return response.data
-})
+export const processTransfer = createAsyncThunk(
+  "transfer/processTransfer",
+  async (transferData: TransferRequest, { rejectWithValue }) => {
+    try {
+      const result = await TransferService.processTransfer(transferData)
+      if (!result.success) {
+        return rejectWithValue(result.error)
+      }
+      return result.data
+    } catch (error) {
+      return rejectWithValue("Failed to process transfer")
+    }
+  },
+)
 
-export const fetchTransferHistory = createAsyncThunk("transfer/fetchTransferHistory", async (limit = 10) => {
-  const response = await TransferService.getTransferHistory(limit)
-  if (!response.success) {
-    throw new Error(response.error)
-  }
-  return response.data
-})
+export const fetchTransferHistory = createAsyncThunk(
+  "transfer/fetchTransferHistory",
+  async (limit = 10, { rejectWithValue }) => {
+    try {
+      const result = await TransferService.getTransferHistory(limit)
+      if (!result.success) {
+        return rejectWithValue(result.error)
+      }
+      return result.data
+    } catch (error) {
+      return rejectWithValue("Failed to fetch transfer history")
+    }
+  },
+)
 
 export const addContact = createAsyncThunk(
   "transfer/addContact",
-  async (contactData: Omit<Contact, "id" | "recentTransfers">) => {
-    const response = await TransferService.addContact(contactData)
-    if (!response.success) {
-      throw new Error(response.error)
+  async (contactData: Omit<Contact, "id" | "recentTransfers">, { rejectWithValue }) => {
+    try {
+      const result = await TransferService.addContact(contactData)
+      if (!result.success) {
+        return rejectWithValue(result.error)
+      }
+      return result.data
+    } catch (error) {
+      return rejectWithValue("Failed to add contact")
     }
-    return response.data
   },
 )
 
@@ -54,7 +76,7 @@ interface TransferState {
   transferHistory: Transaction[]
   isLoading: boolean
   error: string | null
-  transferStatus: "idle" | "pending" | "success" | "failed"
+  isTransferring: boolean
 }
 
 const initialState: TransferState = {
@@ -66,7 +88,7 @@ const initialState: TransferState = {
   transferHistory: [],
   isLoading: false,
   error: null,
-  transferStatus: "idle",
+  isTransferring: false,
 }
 
 const transferSlice = createSlice({
@@ -93,11 +115,22 @@ const transferSlice = createSlice({
       state.amount = 0
       state.reason = ""
       state.comment = ""
-      state.transferStatus = "idle"
       state.error = null
     },
     clearError: (state) => {
       state.error = null
+    },
+    updateContactRecentTransfer: (state, action: PayloadAction<{ contactId: string; amount: number }>) => {
+      const { contactId, amount } = action.payload
+      const contact = state.contacts.find((c) => c.id === contactId)
+      if (contact) {
+        contact.recentTransfers.unshift({
+          amount,
+          date: new Date().toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }),
+          type: "sent",
+        })
+        contact.recentTransfers = contact.recentTransfers.slice(0, 5)
+      }
     },
   },
   extraReducers: (builder) => {
@@ -108,11 +141,12 @@ const transferSlice = createSlice({
       })
       .addCase(fetchContacts.fulfilled, (state, action) => {
         state.isLoading = false
-        state.contacts = action.payload
+        state.contacts = action.payload || []
+        state.error = null
       })
       .addCase(fetchContacts.rejected, (state, action) => {
         state.isLoading = false
-        state.error = action.error.message || "Failed to fetch contacts"
+        state.error = action.payload as string
       })
       .addCase(fetchContact.pending, (state) => {
         state.isLoading = true
@@ -132,34 +166,39 @@ const transferSlice = createSlice({
       })
       .addCase(fetchTransferHistory.fulfilled, (state, action) => {
         state.isLoading = false
-        state.transferHistory = action.payload
+        state.transferHistory = action.payload || []
+        state.error = null
       })
       .addCase(fetchTransferHistory.rejected, (state, action) => {
         state.isLoading = false
-        state.error = action.error.message || "Failed to fetch transfer history"
+        state.error = action.payload as string
       })
       .addCase(processTransfer.pending, (state) => {
-        state.transferStatus = "pending"
+        state.isTransferring = true
         state.error = null
       })
       .addCase(processTransfer.fulfilled, (state, action) => {
-        state.transferStatus = "success"
-        const newTransaction: Transaction = {
-          id: action.payload.transactionId,
-          type: "transfer",
-          amount: -action.payload.amount,
-          description: `Transferencia a ${action.payload.contactName}`,
-          date: new Date().toISOString().split("T")[0],
-          status: "completed",
-          category: "Transferencias",
-          contactName: action.payload.contactName,
-          balance: 0,
+        state.isTransferring = false
+        state.error = null
+        state.selectedContact = null
+        state.amount = 0
+        state.reason = ""
+        state.comment = ""
+        if (state.selectedContact) {
+          const contact = state.contacts.find((c) => c.id === state.selectedContact?.id)
+          if (contact) {
+            contact.recentTransfers.unshift({
+              amount: state.amount,
+              date: new Date().toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }),
+              type: "sent",
+            })
+            contact.recentTransfers = contact.recentTransfers.slice(0, 5)
+          }
         }
-        state.transferHistory.unshift(newTransaction)
       })
       .addCase(processTransfer.rejected, (state, action) => {
-        state.transferStatus = "failed"
-        state.error = action.error.message || "Transfer failed"
+        state.isTransferring = false
+        state.error = action.payload as string
       })
       .addCase(addContact.pending, (state) => {
         state.isLoading = true
@@ -167,17 +206,27 @@ const transferSlice = createSlice({
       })
       .addCase(addContact.fulfilled, (state, action) => {
         state.isLoading = false
-        state.contacts.push(action.payload)
+        if (action.payload) {
+          state.contacts.push(action.payload)
+        }
+        state.error = null
       })
       .addCase(addContact.rejected, (state, action) => {
         state.isLoading = false
-        state.error = action.error.message || "Failed to add contact"
+        state.error = action.payload as string
       })
   },
 })
 
-export const { setSelectedContact, setAmount, setReason, setComment, clearTransferForm, clearError } =
-  transferSlice.actions
+export const {
+  setSelectedContact,
+  setAmount,
+  setReason,
+  setComment,
+  clearTransferForm,
+  clearError,
+  updateContactRecentTransfer,
+} = transferSlice.actions
 
 export const transferReducer = transferSlice.reducer
 
@@ -186,7 +235,6 @@ export const selectContacts = (state: { transfer: TransferState }) => state.tran
 export const selectSelectedContact = (state: { transfer: TransferState }) => state.transfer.selectedContact
 export const selectTransferHistory = (state: { transfer: TransferState }) => state.transfer.transferHistory
 export const selectIsLoading = (state: { transfer: TransferState }) => state.transfer.isLoading
-export const selectTransferStatus = (state: { transfer: TransferState }) => state.transfer.transferStatus
 export const selectError = (state: { transfer: TransferState }) => state.transfer.error
 
 export const selectFilteredContacts = (state: { transfer: TransferState }) => {
