@@ -1,13 +1,10 @@
-// localStorage utility with error handling and type safety
 export const STORAGE_KEYS = {
   TRANSFERS: "banking_transfers",
   CONTACTS: "banking_contacts",
-  ACCOUNT: "banking_account",
-  SETTINGS: "banking_settings",
+  USER_PREFERENCES: "banking_preferences",
 } as const
 
 export const storage = {
-  // Get item from localStorage with type safety
   getItem: <T>(key: string, defaultValue: T): T => {\
     if (typeof window === 'undefined') return defaultValue
     
@@ -20,7 +17,6 @@ export const storage = {
     }
   },
 
-  // Set item in localStorage
   setItem: <T>(key: string, value: T): void => {\
     if (typeof window === 'undefined') return
     
@@ -31,18 +27,16 @@ export const storage = {
     }
   },
 
-  // Remove item from localStorage
   removeItem: (key: string): void => {\
     if (typeof window === 'undefined') return
     
     try {
       localStorage.removeItem(key)
     } catch (error) {
-      console.error(`Error removing from localStorage key "${key}":`, error)
+      console.error(`Error removing localStorage key "${key}":`, error)
     }
   },
 
-  // Clear all localStorage
   clear: (): void => {\
     if (typeof window === 'undefined') return
     
@@ -51,5 +45,5 @@ export const storage = {
     } catch (error) {
       console.error('Error clearing localStorage:', error)
     }
-  },\
+  }\
 }

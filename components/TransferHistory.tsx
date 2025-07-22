@@ -2,18 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowUpRight, ArrowDownLeft, RefreshCw } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { ArrowUpRight, ArrowDownLeft, RefreshCw, Clock } from "lucide-react"
 import { TransferService } from "@/lib/api/services/transfer.service"
 import type { Transaction } from "@/lib/api/types"
 
-interface TransferHistoryProps {
-  limit?: number
-  showTitle?: boolean
-}
-
-export function TransferHistory({ limit = 10, showTitle = true }: TransferHistoryProps) {
+export function TransferHistory() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -22,15 +18,15 @@ export function TransferHistory({ limit = 10, showTitle = true }: TransferHistor
     try {
       setIsLoading(true)
       setError(null)
-      const result = await TransferService.getTransferHistory(limit)
+      const response = await TransferService.getTransferHistory(20)
 
-      if (result.success) {
-        setTransactions(result.data)
+      if (response.success) {
+        setTransactions(response.data || [])
       } else {
-        setError(result.error || "Error al cargar el historial")
+        setError(response.error || "Failed to load transfer history")
       }
     } catch (err) {
-      setError("Error al cargar el historial de transferencias")
+      setError("Failed to load transfer history")
     } finally {
       setIsLoading(false)
     }
@@ -38,7 +34,7 @@ export function TransferHistory({ limit = 10, showTitle = true }: TransferHistor
 
   useEffect(() => {
     loadTransferHistory()
-  }, [limit])
+  }, [])
 
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("es-AR", {
@@ -53,35 +49,47 @@ export function TransferHistory({ limit = 10, showTitle = true }: TransferHistor
     return date.toLocaleDateString("es-AR", {
       day: "2-digit",
       month: "2-digit",
-      year: "2-digit",
+      year: "numeric",
     })
+  }
+
+  const getTransactionIcon = (amount: number) => {
+    return amount < 0 ? (
+      <ArrowUpRight className="h-4 w-4 text-red-500" />
+    ) : (
+      <ArrowDownLeft className="h-4 w-4 text-green-500" />
+    )
+  }
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      completed: { label: "Completada", variant: "default" as const },
+      pending: { label: "Pendiente", variant: "secondary" as const },
+      failed: { label: "Fallida", variant: "destructive" as const },
+    }
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.completed
+
+    return (
+      <Badge variant={config.variant} className="text-xs">
+        {config.label}
+      </Badge>
+    )
   }
 
   if (isLoading) {
     return (
       <Card>
-        {showTitle && (
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <RefreshCw className="h-5 w-5 animate-spin" />
-              Historial de Transferencias
-            </CardTitle>
-          </CardHeader>
-        )}
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Historial de Transferencias
+          </CardTitle>
+        </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg animate-pulse">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full" />
-                  <div className="space-y-1">
-                    <div className="w-32 h-4 bg-gray-200 rounded" />
-                    <div className="w-20 h-3 bg-gray-200 rounded" />
-                  </div>
-                </div>
-                <div className="w-16 h-4 bg-gray-200 rounded" />
-              </div>
-            ))}
+          <div className="flex items-center justify-center py-8">
+            <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-muted-foreground">Cargando historial...</span>
           </div>
         </CardContent>
       </Card>
@@ -91,15 +99,16 @@ export function TransferHistory({ limit = 10, showTitle = true }: TransferHistor
   if (error) {
     return (
       <Card>
-        {showTitle && (
-          <CardHeader>
-            <CardTitle>Historial de Transferencias</CardTitle>
-          </CardHeader>
-        )}
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Historial de Transferencias
+          </CardTitle>
+        </CardHeader>
         <CardContent>
-          <div className="text-center py-6">
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={loadTransferHistory} variant="outline" size="sm">
+          <div className="text-center py-8">
+            <p className="text-red-500 mb-4">{error}</p>
+            <Button onClick={loadTransferHistory} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Reintentar
             </Button>
@@ -111,55 +120,52 @@ export function TransferHistory({ limit = 10, showTitle = true }: TransferHistor
 
   return (
     <Card>
-      {showTitle && (
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Historial de Transferencias</CardTitle>
-          <Button onClick={loadTransferHistory} variant="ghost" size="sm">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-      )}
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
+          <Clock className="h-5 w-5" />
+          Historial de Transferencias
+        </CardTitle>
+        <Button onClick={loadTransferHistory} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Actualizar
+        </Button>
+      </CardHeader>
       <CardContent>
         {transactions.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-8 text-muted-foreground">
+            <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No hay transferencias registradas</p>
+            <p className="text-sm">Las transferencias aparecerán aquí una vez que las realices</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {transactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`p-2 rounded-full ${
-                      transaction.amount > 0 ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                    }`}
-                  >
-                    {transaction.amount > 0 ? (
-                      <ArrowDownLeft className="h-4 w-4" />
-                    ) : (
-                      <ArrowUpRight className="h-4 w-4" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{transaction.contactName || transaction.description}</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs text-gray-500">{formatDate(transaction.date)}</p>
-                      <Badge variant={transaction.status === "completed" ? "default" : "secondary"} className="text-xs">
-                        {transaction.status === "completed" ? "Completada" : "Pendiente"}
-                      </Badge>
+          <div className="space-y-4">
+            {transactions.map((transaction, index) => (
+              <div key={transaction.id}>
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">{getTransactionIcon(transaction.amount)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{transaction.description}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs text-muted-foreground">{formatDate(transaction.date)}</p>
+                        {getStatusBadge(transaction.status)}
+                      </div>
+                      {transaction.contactName && (
+                        <p className="text-xs text-muted-foreground mt-1">{transaction.contactName}</p>
+                      )}
                     </div>
                   </div>
+                  <div className="text-right">
+                    <p className={`font-semibold ${transaction.amount < 0 ? "text-red-600" : "text-green-600"}`}>
+                      {transaction.amount < 0 ? "-" : "+"}
+                      {formatAmount(transaction.amount)}
+                    </p>
+                    {transaction.balance !== undefined && (
+                      <p className="text-xs text-muted-foreground">Saldo: {formatAmount(transaction.balance)}</p>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${transaction.amount > 0 ? "text-green-600" : "text-red-600"}`}>
-                    {transaction.amount > 0 ? "+" : "-"}
-                    {formatAmount(transaction.amount)}
-                  </p>
-                  <p className="text-xs text-gray-500">{transaction.category}</p>
-                </div>
+                {index < transactions.length - 1 && <Separator />}
               </div>
             ))}
           </div>

@@ -1,24 +1,35 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import { TransferService } from "@/lib/api/services/transfer.service"
-import type { Transaction, TransferRequest, TransferResponse } from "@/lib/api/types"
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { storage, STORAGE_KEYS } from "../lib/storage"
 
+interface Contact {
+  id: string
+  name: string
+  initials: string
+  hasUala: boolean
+  phone?: string
+  email?: string
+  recentTransfers: Array<{
+    amount: number
+    date: string
+    type: "sent" | "received"
+  }>
+}
+
 interface TransferState {
-  contacts: any[]
-  selectedContact: any | null
-  transferHistory: Transaction[]
-  isLoading: boolean
-  error: string | null
-  lastTransfer: TransferResponse | null
+  contacts: Contact[]
+  selectedContact: Contact | null
+  amount: number
 }
 
 // Initial contacts with more variety
-const initialContacts = [
+const initialContacts: Contact[] = [
   {
     id: "1",
     name: "Elyer Saitest",
     initials: "ES",
     hasUala: true,
+    phone: "+54 9 11 1234-5678",
+    email: "elyer@example.com",
     recentTransfers: [
       { amount: 40000, date: "18/01", type: "sent" },
       { amount: 30000, date: "03/01", type: "received" },
@@ -30,6 +41,8 @@ const initialContacts = [
     name: "Pato Free Range",
     initials: "PF",
     hasUala: true,
+    phone: "+54 9 11 2345-6789",
+    email: "pato@example.com",
     recentTransfers: [
       { amount: 25000, date: "15/01", type: "received" },
       { amount: 12000, date: "10/01", type: "sent" },
@@ -40,6 +53,8 @@ const initialContacts = [
     name: "Ana Martínez",
     initials: "AM",
     hasUala: true,
+    phone: "+54 9 11 3456-7890",
+    email: "ana.martinez@example.com",
     recentTransfers: [
       { amount: 75000, date: "20/01", type: "sent" },
       { amount: 15000, date: "12/01", type: "received" },
@@ -50,6 +65,8 @@ const initialContacts = [
     name: "Carlos Rodriguez",
     initials: "CR",
     hasUala: true,
+    phone: "+54 9 11 4567-8901",
+    email: "carlos.rodriguez@example.com",
     recentTransfers: [{ amount: 35000, date: "17/01", type: "received" }],
   },
   {
@@ -57,6 +74,8 @@ const initialContacts = [
     name: "Lucía Fernández",
     initials: "LF",
     hasUala: true,
+    phone: "+54 9 11 5678-9012",
+    email: "lucia.fernandez@example.com",
     recentTransfers: [],
   },
   {
@@ -64,6 +83,8 @@ const initialContacts = [
     name: "Diego Morales",
     initials: "DM",
     hasUala: true,
+    phone: "+54 9 11 6789-0123",
+    email: "diego.morales@example.com",
     recentTransfers: [
       { amount: 22000, date: "14/01", type: "sent" },
       { amount: 18000, date: "08/01", type: "received" },
@@ -76,6 +97,8 @@ const initialContacts = [
     name: "María González",
     initials: "MG",
     hasUala: false,
+    phone: "+54 9 11 7890-1234",
+    email: "maria.gonzalez@example.com",
     recentTransfers: [{ amount: 60000, date: "16/01", type: "sent" }],
   },
   {
@@ -83,6 +106,8 @@ const initialContacts = [
     name: "Roberto Silva",
     initials: "RS",
     hasUala: false,
+    phone: "+54 9 11 8901-2345",
+    email: "roberto.silva@example.com",
     recentTransfers: [],
   },
   {
@@ -90,6 +115,8 @@ const initialContacts = [
     name: "Carmen López",
     initials: "CL",
     hasUala: false,
+    phone: "+54 9 11 9012-3456",
+    email: "carmen.lopez@example.com",
     recentTransfers: [
       { amount: 28000, date: "13/01", type: "received" },
       { amount: 33000, date: "05/01", type: "sent" },
@@ -100,6 +127,8 @@ const initialContacts = [
     name: "Fernando Ruiz",
     initials: "FR",
     hasUala: false,
+    phone: "+54 9 11 0123-4567",
+    email: "fernando.ruiz@example.com",
     recentTransfers: [
       { amount: 95000, date: "19/01", type: "sent" },
       { amount: 42000, date: "11/01", type: "received" },
@@ -110,6 +139,8 @@ const initialContacts = [
     name: "Valentina Castro",
     initials: "VC",
     hasUala: false,
+    phone: "+54 9 11 1234-5670",
+    email: "valentina.castro@example.com",
     recentTransfers: [],
   },
   {
@@ -117,13 +148,15 @@ const initialContacts = [
     name: "Sebastián Torres",
     initials: "ST",
     hasUala: false,
+    phone: "+54 9 11 2345-6701",
+    email: "sebastian.torres@example.com",
     recentTransfers: [{ amount: 17000, date: "09/01", type: "received" }],
   },
 ]
 
 // Load contacts from localStorage or use initial contacts
-const loadContacts = (): any[] => {
-  const storedContacts = storage.getItem<any[]>(STORAGE_KEYS.CONTACTS, [])
+const loadContacts = (): Contact[] => {
+  const storedContacts = storage.getItem<Contact[]>(STORAGE_KEYS.CONTACTS, [])
 
   // Merge initial contacts with stored contacts, avoiding duplicates
   const allContacts = [...initialContacts]
@@ -139,169 +172,48 @@ const loadContacts = (): any[] => {
 const initialState: TransferState = {
   contacts: loadContacts(),
   selectedContact: null,
-  transferHistory: [],
-  isLoading: false,
-  error: null,
-  lastTransfer: null,
+  amount: 0,
 }
 
-// Async thunks
-export const fetchContacts = createAsyncThunk("transfer/fetchContacts", async () => {
-  const response = await TransferService.getContacts()
-  if (!response.success) {
-    throw new Error(response.error || "Failed to fetch contacts")
-  }
-  return response.data
-})
-
-export const fetchContact = createAsyncThunk("transfer/fetchContact", async (contactId: string) => {
-  const response = await TransferService.getContact(contactId)
-  if (!response.success) {
-    throw new Error(response.error || "Failed to fetch contact")
-  }
-  return response.data
-})
-
-export const fetchTransferHistory = createAsyncThunk("transfer/fetchTransferHistory", async (limit = 10) => {
-  const response = await TransferService.getTransferHistory(limit)
-  if (!response.success) {
-    throw new Error(response.error || "Failed to fetch transfer history")
-  }
-  return response.data
-})
-
-export const processTransfer = createAsyncThunk("transfer/processTransfer", async (transferData: TransferRequest) => {
-  const response = await TransferService.processTransfer(transferData)
-  if (!response.success) {
-    throw new Error(response.error || "Failed to process transfer")
-  }
-  return response.data
-})
-
-export const addContact = createAsyncThunk("transfer/addContact", async (contactData: any) => {
-  const response = await TransferService.addContact(contactData)
-  if (!response.success) {
-    throw new Error(response.error || "Failed to add contact")
-  }
-  return response.data
-})
-
-const transferSlice = createSlice({
+export const transferSlice = createSlice({
   name: "transfer",
   initialState,
   reducers: {
-    setSelectedContact: (state, action: PayloadAction<any | null>) => {
+    setSelectedContact: (state, action: PayloadAction<Contact | null>) => {
       state.selectedContact = action.payload
     },
-    clearError: (state) => {
-      state.error = null
+    setAmount: (state, action: PayloadAction<number>) => {
+      state.amount = action.payload
     },
-    clearLastTransfer: (state) => {
-      state.lastTransfer = null
+    addContact: (state, action: PayloadAction<Contact>) => {
+      state.contacts.push(action.payload)
+      // Save to localStorage
+      storage.setItem(STORAGE_KEYS.CONTACTS, state.contacts)
     },
-    // Add a transaction to the history (for localStorage integration)
-    addTransactionToHistory: (state, action: PayloadAction<Transaction>) => {
-      state.transferHistory.unshift(action.payload)
+    updateContactTransfers: (
+      state,
+      action: PayloadAction<{
+        contactId: string
+        transfer: { amount: number; date: string; type: "sent" | "received" }
+      }>,
+    ) => {
+      const { contactId, transfer } = action.payload
+      const contact = state.contacts.find((c) => c.id === contactId)
+      if (contact) {
+        contact.recentTransfers.unshift(transfer)
+        // Keep only last 5 transfers
+        contact.recentTransfers = contact.recentTransfers.slice(0, 5)
+        // Save to localStorage
+        storage.setItem(STORAGE_KEYS.CONTACTS, state.contacts)
+      }
     },
-    // Update contacts with localStorage data
-    updateContacts: (state, action: PayloadAction<any[]>) => {
-      state.contacts = action.payload
+    loadContactsFromStorage: (state) => {
+      state.contacts = loadContacts()
     },
-  },
-  extraReducers: (builder) => {
-    // Fetch contacts
-    builder
-      .addCase(fetchContacts.pending, (state) => {
-        state.isLoading = true
-        state.error = null
-      })
-      .addCase(fetchContacts.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.contacts = action.payload
-      })
-      .addCase(fetchContacts.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.error.message || "Failed to fetch contacts"
-      })
-
-    // Fetch contact
-    builder
-      .addCase(fetchContact.pending, (state) => {
-        state.isLoading = true
-        state.error = null
-      })
-      .addCase(fetchContact.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.selectedContact = action.payload
-      })
-      .addCase(fetchContact.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.error.message || "Failed to fetch contact"
-      })
-
-    // Fetch transfer history
-    builder
-      .addCase(fetchTransferHistory.pending, (state) => {
-        state.isLoading = true
-        state.error = null
-      })
-      .addCase(fetchTransferHistory.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.transferHistory = action.payload
-      })
-      .addCase(fetchTransferHistory.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.error.message || "Failed to fetch transfer history"
-      })
-
-    // Process transfer
-    builder
-      .addCase(processTransfer.pending, (state) => {
-        state.isLoading = true
-        state.error = null
-      })
-      .addCase(processTransfer.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.lastTransfer = action.payload
-
-        // Add the new transaction to history
-        const newTransaction: Transaction = {
-          id: action.payload.transactionId,
-          type: "transfer",
-          amount: -action.payload.amount,
-          description: `Transferencia a ${action.payload.contactName}`,
-          date: new Date().toISOString().split("T")[0],
-          status: "completed",
-          category: "Transferencias",
-          contactName: action.payload.contactName,
-          balance: 0, // This would be updated by the backend in a real app
-        }
-
-        state.transferHistory.unshift(newTransaction)
-      })
-      .addCase(processTransfer.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.error.message || "Failed to process transfer"
-      })
-
-    // Add contact
-    builder
-      .addCase(addContact.pending, (state) => {
-        state.isLoading = true
-        state.error = null
-      })
-      .addCase(addContact.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.contacts.push(action.payload)
-      })
-      .addCase(addContact.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.error.message || "Failed to add contact"
-      })
   },
 })
 
-export const { setSelectedContact, clearError, clearLastTransfer, addTransactionToHistory, updateContacts } =
+export const { setSelectedContact, setAmount, addContact, updateContactTransfers, loadContactsFromStorage } =
   transferSlice.actions
 
-export default transferSlice.reducer
+export const transferReducer = transferSlice.reducer
