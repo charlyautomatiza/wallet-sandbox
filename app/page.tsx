@@ -57,85 +57,86 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-blue-600">
+    <div className="min-h-screen bg-blue-600" data-testid="home-page">
       {/* Header */}
-      <div className="p-4 flex items-center justify-between text-white">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center text-xl font-semibold">
+      <div className="p-4 flex items-center justify-between text-white" data-testid="home-header">
+        <div className="flex items-center space-x-3" data-testid="user-info">
+          <div className="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center text-xl font-semibold" data-testid="user-avatar">
             {user?.initials}
           </div>
-          <div>
-            <h1 className="text-xl font-semibold">Hola, {user?.name}</h1>
+          <div data-testid="user-greeting">
+            <h1 className="text-xl font-semibold" data-testid="user-name">Hola, {user?.name}</h1>
             <div className="flex items-center">
-              <span className="text-sm">⭐ {user?.points.toLocaleString()} pts</span>
+              <span className="text-sm" data-testid="user-points">⭐ {user?.points.toLocaleString()} pts</span>
             </div>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <Bell size={24} />
-          <HelpCircle size={24} />
+        <div className="flex items-center space-x-4" data-testid="header-actions">
+          <Bell size={24} data-testid="notifications-button" />
+          <HelpCircle size={24} data-testid="help-button" />
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="bg-gray-50 rounded-t-3xl mt-4">
+      <div className="bg-gray-50 rounded-t-3xl mt-4" data-testid="main-content">
         {/* Currency Toggle */}
-        <div className="flex p-4 border-b">
-          <button className="flex-1 text-center font-medium text-blue-600 border-b-2 border-blue-600 pb-2">
+        <div className="flex p-4 border-b" data-testid="currency-toggle">
+          <button className="flex-1 text-center font-medium text-blue-600 border-b-2 border-blue-600 pb-2" data-testid="pesos-tab">
             Pesos
           </button>
-          <button className="flex-1 text-center text-gray-600">
+          <button className="flex-1 text-center text-gray-600" data-testid="dollars-tab">
             Dólares <span className="text-green-500 text-sm">¡Nuevo!</span>
           </button>
         </div>
 
         {/* Balance */}
-        <div className="p-4">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-xl text-gray-700">Saldo disponible</h2>
-            <span className="text-green-500 text-sm">+35%</span>
+        <div className="p-4" data-testid="balance-section">
+          <div className="flex justify-between items-center mb-2" data-testid="balance-header">
+            <h2 className="text-xl text-gray-700" data-testid="balance-title">Saldo disponible</h2>
+            <span className="text-green-500 text-sm" data-testid="balance-change">+35%</span>
           </div>
-          <div className="flex items-center space-x-2 mb-4">
-            <span className="text-3xl font-bold">${showBalance ? account.balance.toLocaleString() : "****"}</span>
-            <button onClick={() => setShowBalance(!showBalance)} className="text-gray-400">
+          <div className="flex items-center space-x-2 mb-4" data-testid="balance-display">
+            <span className="text-3xl font-bold" data-testid="balance-amount">${showBalance ? account.balance.toLocaleString() : "****"}</span>
+            <button onClick={() => setShowBalance(!showBalance)} className="text-gray-400" data-testid="balance-toggle">
               {showBalance ? <Eye className="w-6 h-6" /> : <EyeOff className="w-6 h-6" />}
             </button>
           </div>
 
           {/* Quick Actions */}
-          <div className="flex space-x-4 mb-8">
-            <Link href="/deposit" className="flex-1 bg-blue-600 text-white rounded-lg py-3 px-4 text-center">
+          <div className="flex space-x-4 mb-8" data-testid="quick-actions">
+            <Link href="/deposit" className="flex-1 bg-blue-600 text-white rounded-lg py-3 px-4 text-center" data-testid="deposit-button">
               Ingresar
             </Link>
             <Link
               href="/transfer"
               className="flex-1 border border-blue-600 text-blue-600 rounded-lg py-3 px-4 text-center"
+              data-testid="transfer-button"
             >
               Transferir
             </Link>
           </div>
 
           {/* Features Grid */}
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            <Link href="/business" className="flex flex-col items-center space-y-2">
+          <div className="grid grid-cols-4 gap-4 mb-8" data-testid="features-grid">
+            <Link href="/business" className="flex flex-col items-center space-y-2" data-testid="business-link">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <Store className="w-6 h-6 text-blue-600" />
               </div>
               <span className="text-xs text-center text-blue-600">Tu Negocio</span>
             </Link>
-            <Link href="/recharge" className="flex flex-col items-center space-y-2">
+            <Link href="/recharge" className="flex flex-col items-center space-y-2" data-testid="recharge-link">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <Smartphone className="w-6 h-6 text-blue-600" />
               </div>
               <span className="text-xs text-center text-blue-600">Recargar</span>
             </Link>
-            <Link href="/credits" className="flex flex-col items-center space-y-2">
+            <Link href="/credits" className="flex flex-col items-center space-y-2" data-testid="credits-link">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <CreditCardIcon className="w-6 h-6 text-blue-600" />
               </div>
               <span className="text-xs text-center text-blue-600">Créditos</span>
             </Link>
-            <Link href="/invest" className="flex flex-col items-center space-y-2">
+            <Link href="/invest" className="flex flex-col items-center space-y-2" data-testid="invest-link">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-blue-600" />
               </div>
@@ -144,10 +145,10 @@ export default function Home() {
           </div>
 
           {/* Cards Section */}
-          <div className="mb-8">
-            <h2 className="text-xl text-gray-700 mb-4">Mis Tarjetas</h2>
-            <div className="relative">
-              <div className={`bg-gradient-to-r ${cards[currentCard].color} rounded-xl p-6 text-white`}>
+          <div className="mb-8" data-testid="cards-section">
+            <h2 className="text-xl text-gray-700 mb-4" data-testid="cards-title">Mis Tarjetas</h2>
+            <div className="relative" data-testid="cards-carousel">
+              <div className={`bg-gradient-to-r ${cards[currentCard].color} rounded-xl p-6 text-white`} data-testid={`card-${currentCard}`}>
                 <div className="flex justify-between items-center mb-8">
                   <span className="text-lg">{cards[currentCard].type}</span>
                   <div className="flex items-center space-x-2">

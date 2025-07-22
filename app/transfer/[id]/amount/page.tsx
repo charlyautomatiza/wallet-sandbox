@@ -27,17 +27,17 @@ export default function TransferAmount({ params }: { params: { id: string } | Pr
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="flex items-center p-4 border-b">
-        <Link href={`/transfer/${id}`} className="mr-4 p-2" aria-label="Volver">
+    <div className="min-h-screen bg-white" data-testid="transfer-amount-page">
+      <div className="flex items-center p-4 border-b" data-testid="transfer-amount-header">
+        <Link href={`/transfer/${id}`} className="mr-4 p-2" aria-label="Volver" data-testid="transfer-amount-back-button">
           <ArrowLeft className="h-6 w-6" />
         </Link>
-        <h1 className="text-xl font-semibold flex-1 text-center mr-6">Ingresá el monto a transferir</h1>
+        <h1 className="text-xl font-semibold flex-1 text-center mr-6" data-testid="transfer-amount-title">Ingresá el monto a transferir</h1>
       </div>
 
-      <div className="p-4 pb-32">
-        <div className="mb-8">
-          <div className="text-4xl mb-2">
+      <div className="p-4 pb-32" data-testid="transfer-amount-content">
+        <div className="mb-8" data-testid="amount-input-section">
+          <div className="text-4xl mb-2" data-testid="amount-input-wrapper">
             <span className="text-gray-400">$</span>
             <input
               type="number"
@@ -47,19 +47,21 @@ export default function TransferAmount({ params }: { params: { id: string } | Pr
               placeholder="0,00"
               aria-label="Monto a transferir"
               autoFocus
+              data-testid="amount-input"
             />
           </div>
-          <p className="text-gray-600">Disponible ${account.balance.toLocaleString()}</p>
+          <p className="text-gray-600" data-testid="available-balance">Disponible ${account.balance.toLocaleString()}</p>
         </div>
       </div>
 
       {/* Fixed Button - Above bottom navigation */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-white border-t z-50">
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-white border-t z-50" data-testid="continue-section">
         <button
           onClick={handleContinue}
           disabled={!inputAmount || Number(inputAmount) <= 0}
           className="w-full bg-blue-600 text-white py-4 rounded-lg font-semibold disabled:bg-gray-300 shadow-lg"
           aria-label="Continuar con la transferencia"
+          data-testid="continue-button"
         >
           Continuar
         </button>

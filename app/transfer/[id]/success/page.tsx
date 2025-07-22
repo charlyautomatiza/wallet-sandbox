@@ -30,49 +30,49 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
   })
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 pb-40">
+    <div className="min-h-screen bg-white" data-testid="transfer-success-page">
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 pb-40" data-testid="success-content">
         {/* Success Icon */}
-        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6">
+        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6" data-testid="success-icon">
           <CheckCircle2 className="w-16 h-16 text-green-500" />
         </div>
 
         {/* Success Message */}
-        <h1 className="text-3xl font-bold mb-2 text-center">¡Transferencia exitosa!</h1>
-        <p className="text-gray-600 mb-8 text-center text-lg">
-          Transferiste <span className="font-semibold">${amount.toLocaleString()}</span> a{" "}
-          <span className="font-semibold">{contact.name}</span>
+        <h1 className="text-3xl font-bold mb-2 text-center" data-testid="success-title">¡Transferencia exitosa!</h1>
+        <p className="text-gray-600 mb-8 text-center text-lg" data-testid="success-message">
+          Transferiste <span className="font-semibold" data-testid="success-amount">${amount.toLocaleString()}</span> a{" "}
+          <span className="font-semibold" data-testid="success-recipient">{contact.name}</span>
         </p>
 
         {/* Transfer Details Card */}
-        <div className="w-full max-w-sm bg-gray-50 rounded-lg p-6 mb-8">
-          <div className="space-y-3">
-            <div className="flex justify-between">
+        <div className="w-full max-w-sm bg-gray-50 rounded-lg p-6 mb-8" data-testid="transfer-details-card">
+          <div className="space-y-3" data-testid="transfer-details-list">
+            <div className="flex justify-between" data-testid="detail-recipient">
               <span className="text-gray-600">Destinatario:</span>
-              <span className="font-medium">{contact.name}</span>
+              <span className="font-medium" data-testid="detail-recipient-value">{contact.name}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between" data-testid="detail-amount">
               <span className="text-gray-600">Monto:</span>
-              <span className="font-medium">${amount.toLocaleString()}</span>
+              <span className="font-medium" data-testid="detail-amount-value">${amount.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between" data-testid="detail-date">
               <span className="text-gray-600">Fecha:</span>
-              <span className="font-medium">{currentDate}</span>
+              <span className="font-medium" data-testid="detail-date-value">{currentDate}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between" data-testid="detail-status">
               <span className="text-gray-600">Estado:</span>
-              <span className="font-medium text-green-600">Completada</span>
+              <span className="font-medium text-green-600" data-testid="detail-status-value">Completada</span>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-4 mb-8">
-          <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg">
+        <div className="flex space-x-4 mb-8" data-testid="action-buttons">
+          <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg" data-testid="share-button">
             <Share className="w-4 h-4" />
             <span>Compartir</span>
           </button>
-          <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg">
+          <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg" data-testid="download-button">
             <Download className="w-4 h-4" />
             <span>Descargar</span>
           </button>
@@ -80,20 +80,20 @@ export default function TransferSuccess({ params }: { params: { id: string } | P
       </div>
 
       {/* Fixed Buttons - Above bottom navigation */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 space-y-3 bg-white border-t z-50">
+      <div className="fixed bottom-20 left-0 right-0 p-4 space-y-3 bg-white border-t z-50" data-testid="navigation-actions">
         <Link
           href="/"
           className="block w-full bg-blue-600 text-white py-4 rounded-lg text-center font-semibold shadow-lg"
-          role="button"
           aria-label="Volver al inicio"
+          data-testid="home-button"
         >
           Volver al inicio
         </Link>
         <Link
           href={`/transfer/${id}`}
           className="block w-full border border-blue-600 text-blue-600 py-4 rounded-lg text-center font-semibold shadow-lg"
-          role="button"
           aria-label="Realizar nueva transferencia"
+          data-testid="new-transfer-button"
         >
           Nueva transferencia
         </Link>
