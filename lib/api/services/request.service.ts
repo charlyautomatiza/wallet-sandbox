@@ -3,10 +3,9 @@ import { mockMoneyRequests, mockContacts } from "../mock-data"
 import type { ApiResponse, MoneyRequest, MoneyRequestInput } from "../types"
 
 export class RequestService {
-  // Get money requests (sent and received)
   static async getMoneyRequests(): Promise<ApiResponse<MoneyRequest[]>> {
     try {
-      const response = await apiClient.get<MoneyRequest[]>("/requests")
+      await apiClient.get<MoneyRequest[]>("/requests")
 
       return {
         success: true,
@@ -21,12 +20,10 @@ export class RequestService {
     }
   }
 
-  // Create money request
   static async createMoneyRequest(requestData: MoneyRequestInput): Promise<ApiResponse<MoneyRequest>> {
     try {
-      const response = await apiClient.post<MoneyRequest>("/requests", requestData, 1000)
+      await apiClient.post<MoneyRequest>("/requests", requestData, 1000)
 
-      // Find contact name if contactId provided
       let requesterName = "Usuario Anónimo"
       if (requestData.contactId) {
         const contact = mockContacts.find((c) => c.id === requestData.contactId)
@@ -43,7 +40,7 @@ export class RequestService {
         requesterName,
         status: "pending",
         createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       }
 
       mockMoneyRequests.unshift(newRequest)
@@ -61,10 +58,9 @@ export class RequestService {
     }
   }
 
-  // Accept money request
   static async acceptMoneyRequest(requestId: string): Promise<ApiResponse<MoneyRequest>> {
     try {
-      const response = await apiClient.put<MoneyRequest>(`/requests/${requestId}/accept`, {})
+      await apiClient.put<MoneyRequest>(`/requests/${requestId}/accept`, {})
 
       const request = mockMoneyRequests.find((r) => r.id === requestId)
       if (!request) {
@@ -89,10 +85,9 @@ export class RequestService {
     }
   }
 
-  // Reject money request
   static async rejectMoneyRequest(requestId: string): Promise<ApiResponse<MoneyRequest>> {
     try {
-      const response = await apiClient.put<MoneyRequest>(`/requests/${requestId}/reject`, {})
+      await apiClient.put<MoneyRequest>(`/requests/${requestId}/reject`, {})
 
       const request = mockMoneyRequests.find((r) => r.id === requestId)
       if (!request) {
@@ -117,10 +112,9 @@ export class RequestService {
     }
   }
 
-  // Cancel money request (for sender)
   static async cancelMoneyRequest(requestId: string): Promise<ApiResponse<boolean>> {
     try {
-      const response = await apiClient.delete<boolean>(`/requests/${requestId}`)
+      await apiClient.delete<boolean>(`/requests/${requestId}`)
 
       const requestIndex = mockMoneyRequests.findIndex((r) => r.id === requestId)
       if (requestIndex === -1) {

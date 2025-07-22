@@ -5,7 +5,6 @@ import { RequestService } from "@/lib/api/services/request.service"
 import { AccountService } from "@/lib/api/services/account.service"
 import type { TransferRequest, MoneyRequestInput } from "@/lib/api/types"
 
-// Transfer action
 export async function handleTransfer(formData: FormData) {
   try {
     const contactId = formData.get("contactId") as string
@@ -14,7 +13,6 @@ export async function handleTransfer(formData: FormData) {
     const reason = formData.get("reason") as string
     const comment = formData.get("comment") as string
 
-    // Validation
     if (!contactId || !contactName) {
       return {
         success: false,
@@ -74,14 +72,12 @@ export async function handleTransfer(formData: FormData) {
   }
 }
 
-// Money request action
 export async function handleRequestMoney(formData: FormData) {
   try {
     const contactId = formData.get("contactId") as string
     const amount = Number.parseFloat(formData.get("amount") as string)
     const description = formData.get("description") as string
 
-    // Validation
     if (!amount || amount <= 0) {
       return {
         success: false,
@@ -132,7 +128,6 @@ export async function handleRequestMoney(formData: FormData) {
   }
 }
 
-// Accept money request action
 export async function handleAcceptRequest(requestId: string) {
   try {
     if (!requestId) {
@@ -165,7 +160,6 @@ export async function handleAcceptRequest(requestId: string) {
   }
 }
 
-// Reject money request action
 export async function handleRejectRequest(requestId: string) {
   try {
     if (!requestId) {
@@ -198,7 +192,6 @@ export async function handleRejectRequest(requestId: string) {
   }
 }
 
-// Update account balance action
 export async function handleUpdateBalance(newBalance: number) {
   try {
     if (typeof newBalance !== "number" || newBalance < 0) {
@@ -231,7 +224,6 @@ export async function handleUpdateBalance(newBalance: number) {
   }
 }
 
-// Toggle card status action
 export async function handleToggleCard(cardId: string) {
   try {
     if (!cardId) {

@@ -3,10 +3,9 @@ import { mockAccount, mockCards } from "../mock-data"
 import type { ApiResponse, Account, Card } from "../types"
 
 export class AccountService {
-  // Get account information
   static async getAccount(): Promise<ApiResponse<Account>> {
     try {
-      const response = await apiClient.get<Account>("/account")
+      await apiClient.get<Account>("/account")
 
       return {
         success: true,
@@ -21,10 +20,9 @@ export class AccountService {
     }
   }
 
-  // Get account balance
   static async getBalance(): Promise<ApiResponse<{ balance: number; currency: string }>> {
     try {
-      const response = await apiClient.get<{ balance: number; currency: string }>("/account/balance")
+      await apiClient.get<{ balance: number; currency: string }>("/account/balance")
 
       return {
         success: true,
@@ -42,10 +40,9 @@ export class AccountService {
     }
   }
 
-  // Update account balance
   static async updateBalance(newBalance: number): Promise<ApiResponse<Account>> {
     try {
-      const response = await apiClient.put<Account>("/account/balance", { balance: newBalance })
+      await apiClient.put<Account>("/account/balance", { balance: newBalance })
 
       mockAccount.balance = newBalance
       mockAccount.updatedAt = new Date().toISOString()
@@ -63,10 +60,9 @@ export class AccountService {
     }
   }
 
-  // Get cards
   static async getCards(): Promise<ApiResponse<Card[]>> {
     try {
-      const response = await apiClient.get<Card[]>("/account/cards")
+      await apiClient.get<Card[]>("/account/cards")
 
       return {
         success: true,
@@ -81,10 +77,9 @@ export class AccountService {
     }
   }
 
-  // Block/Unblock card
   static async toggleCardStatus(cardId: string): Promise<ApiResponse<Card>> {
     try {
-      const response = await apiClient.put<Card>(`/account/cards/${cardId}/toggle`)
+      await apiClient.put<Card>(`/account/cards/${cardId}/toggle`)
 
       const card = mockCards.find((c) => c.id === cardId)
       if (!card) {
@@ -109,12 +104,10 @@ export class AccountService {
     }
   }
 
-  // Get account statement
   static async getStatement(startDate: string, endDate: string): Promise<ApiResponse<any[]>> {
     try {
-      const response = await apiClient.get<any[]>(`/account/statement?start=${startDate}&end=${endDate}`)
+      await apiClient.get<any[]>(`/account/statement?start=${startDate}&end=${endDate}`)
 
-      // Mock statement data
       const statement = [
         {
           date: "2024-01-15",
@@ -149,12 +142,10 @@ export class AccountService {
     }
   }
 
-  // Update account settings
   static async updateAccountSettings(settings: Partial<Account>): Promise<ApiResponse<Account>> {
     try {
-      const response = await apiClient.put<Account>("/account/settings", settings)
+      await apiClient.put<Account>("/account/settings", settings)
 
-      // Update mock account with new settings
       Object.assign(mockAccount, settings, { updatedAt: new Date().toISOString() })
 
       return {

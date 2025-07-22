@@ -35,13 +35,11 @@ export default function HomePage() {
       try {
         setIsLoading(true)
 
-        // Fetch account data
         const accountResponse = await AccountService.getAccount()
         if (accountResponse.success) {
           setAccount(accountResponse.data)
         }
 
-        // Fetch contacts
         const contactsResponse = await TransferService.getContacts()
         if (contactsResponse.success) {
           setContacts(contactsResponse.data.filter((c) => c.isFrequent).slice(0, 6))
@@ -78,7 +76,6 @@ export default function HomePage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-6 space-y-6">
-          {/* Balance Card Skeleton */}
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -90,7 +87,6 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Quick Actions Skeleton */}
           <Card>
             <CardHeader>
               <Skeleton className="h-6 w-32" />
@@ -104,7 +100,6 @@ export default function HomePage() {
             </CardContent>
           </Card>
 
-          {/* Recent Contacts Skeleton */}
           <Card>
             <CardHeader>
               <Skeleton className="h-6 w-40" />
@@ -125,7 +120,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Balance Card */}
         <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -146,7 +140,6 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
         <Card>
           <CardHeader>
             <CardTitle>Acciones rápidas</CardTitle>
@@ -184,7 +177,6 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Recent Contacts */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -237,7 +229,6 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Investment Summary */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -266,10 +257,8 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Transfer History */}
         <TransferHistory limit={5} />
 
-        {/* Additional Services */}
         <Card>
           <CardHeader>
             <CardTitle>Más servicios</CardTitle>

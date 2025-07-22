@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/tool
 import { TransferService } from "@/lib/api/services/transfer.service"
 import type { Contact, Transaction, TransferRequest } from "@/lib/api/types"
 
-// Async thunks
 export const fetchContacts = createAsyncThunk("transfer/fetchContacts", async () => {
   const response = await TransferService.getContacts()
   if (!response.success) {
@@ -46,29 +45,20 @@ export const addContact = createAsyncThunk(
   },
 )
 
-// State interface
 interface TransferState {
-  // Transfer form state
   selectedContact: Contact | null
   amount: number
   reason: string
   comment: string
-
-  // Data state
   contacts: Contact[]
   transferHistory: Transaction[]
-
-  // UI state
   isLoading: boolean
   isProcessing: boolean
   error: string | null
-
-  // Filter state
   showOnlyUala: boolean
   searchQuery: string
 }
 
-// Initial state
 const initialState: TransferState = {
   selectedContact: null,
   amount: 0,
@@ -83,12 +73,10 @@ const initialState: TransferState = {
   searchQuery: "",
 }
 
-// Slice
 const transferSlice = createSlice({
   name: "transfer",
   initialState,
   reducers: {
-    // Form actions
     setSelectedContact: (state, action: PayloadAction<Contact | null>) => {
       state.selectedContact = action.payload
       state.error = null
@@ -104,16 +92,12 @@ const transferSlice = createSlice({
     setComment: (state, action: PayloadAction<string>) => {
       state.comment = action.payload
     },
-
-    // Filter actions
     setShowOnlyUala: (state, action: PayloadAction<boolean>) => {
       state.showOnlyUala = action.payload
     },
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.searchQuery = action.payload
     },
-
-    // Reset actions
     resetTransfer: (state) => {
       state.selectedContact = null
       state.amount = 0
@@ -125,15 +109,12 @@ const transferSlice = createSlice({
     clearError: (state) => {
       state.error = null
     },
-
-    // Local storage sync
     syncWithLocalStorage: (state) => {
       const combinedTransactions = TransferService.getCombinedTransactions()
       state.transferHistory = combinedTransactions.filter((t) => t.type === "transfer")
     },
   },
   extraReducers: (builder) => {
-    // Fetch contacts
     builder
       .addCase(fetchContacts.pending, (state) => {
         state.isLoading = true
@@ -147,9 +128,6 @@ const transferSlice = createSlice({
         state.isLoading = false
         state.error = action.error.message || "Failed to fetch contacts"
       })
-
-    // Fetch contact
-    builder
       .addCase(fetchContact.pending, (state) => {
         state.isLoading = true
         state.error = null
@@ -162,9 +140,6 @@ const transferSlice = createSlice({
         state.isLoading = false
         state.error = action.error.message || "Failed to fetch contact"
       })
-
-    // Fetch transfer history
-    builder
       .addCase(fetchTransferHistory.pending, (state) => {
         state.isLoading = true
         state.error = null
@@ -177,21 +152,16 @@ const transferSlice = createSlice({
         state.isLoading = false
         state.error = action.error.message || "Failed to fetch transfer history"
       })
-
-    // Process transfer
-    builder
       .addCase(processTransfer.pending, (state) => {
         state.isProcessing = true
         state.error = null
       })
       .addCase(processTransfer.fulfilled, (state, action) => {
         state.isProcessing = false
-        // Reset form after successful transfer
         state.selectedContact = null
         state.amount = 0
         state.reason = ""
         state.comment = ""
-        // Sync with localStorage to get updated history
         const combinedTransactions = TransferService.getCombinedTransactions()
         state.transferHistory = combinedTransactions.filter((t) => t.type === "transfer")
       })
@@ -199,9 +169,6 @@ const transferSlice = createSlice({
         state.isProcessing = false
         state.error = action.error.message || "Failed to process transfer"
       })
-
-    // Add contact
-    builder
       .addCase(addContact.pending, (state) => {
         state.isLoading = true
         state.error = null
@@ -217,7 +184,6 @@ const transferSlice = createSlice({
   },
 })
 
-// Export actions
 export const {
   setSelectedContact,
   setAmount,
@@ -230,10 +196,8 @@ export const {
   syncWithLocalStorage,
 } = transferSlice.actions
 
-// Export reducer
 export const transferReducer = transferSlice.reducer
 
-// Selectors
 export const selectTransferState = (state: { transfer: TransferState }) => state.transfer
 export const selectContacts = (state: { transfer: TransferState }) => state.transfer.contacts
 export const selectSelectedContact = (state: { transfer: TransferState }) => state.transfer.selectedContact
@@ -242,7 +206,6 @@ export const selectIsLoading = (state: { transfer: TransferState }) => state.tra
 export const selectIsProcessing = (state: { transfer: TransferState }) => state.transfer.isProcessing
 export const selectError = (state: { transfer: TransferState }) => state.transfer.error
 
-// Filtered selectors
 export const selectFilteredContacts = (state: { transfer: TransferState }) => {
   const { contacts, showOnlyUala, searchQuery } = state.transfer
 
@@ -265,5 +228,4 @@ export const selectFilteredContacts = (state: { transfer: TransferState }) => {
   return filtered
 }
 
-// Export default reducer
 export default transferSlice.reducer

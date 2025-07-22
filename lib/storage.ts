@@ -1,4 +1,3 @@
-// Storage utility for localStorage operations with error handling
 export const STORAGE_KEYS = {
   TRANSFERS: "banking_transfers",
   CONTACTS: "banking_contacts",
@@ -7,7 +6,6 @@ export const STORAGE_KEYS = {
 } as const
 
 export const storage = {
-  // Get item from localStorage with fallback
   getItem: <T>(key: string, fallback: T): T => {\
     if (typeof window === 'undefined') return fallback
     
@@ -20,7 +18,6 @@ export const storage = {
     }
   },
 
-  // Set item in localStorage
   setItem: <T>(key: string, value: T): void => {\
     if (typeof window === 'undefined') return
     
@@ -31,7 +28,6 @@ export const storage = {
     }
   },
 
-  // Remove item from localStorage
   removeItem: (key: string): void => {\
     if (typeof window === 'undefined') return
     
@@ -42,7 +38,6 @@ export const storage = {
     }
   },
 
-  // Clear all storage
   clear: (): void => {\
     if (typeof window === 'undefined') return
     

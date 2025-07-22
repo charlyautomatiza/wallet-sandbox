@@ -1,6 +1,5 @@
-import type { Contact, Transaction, Account, Card, MoneyRequest, Investment } from "./types"
+import type { Contact, Transaction, Account, Card, MoneyRequest } from "./types"
 
-// Mock contacts with realistic data
 export const mockContacts: Contact[] = [
   {
     id: "1",
@@ -88,49 +87,8 @@ export const mockContacts: Contact[] = [
     isFrequent: true,
     recentTransfers: [{ amount: 12000, date: "13/01", type: "sent" }],
   },
-  {
-    id: "9",
-    name: "Carmen Ruiz",
-    phone: "+54 9 11 0123-4567",
-    email: "carmen.ruiz@email.com",
-    avatar: "/placeholder-user.jpg",
-    hasUala: false,
-    isFrequent: false,
-    recentTransfers: [],
-  },
-  {
-    id: "10",
-    name: "Roberto Silva",
-    phone: "+54 9 11 1234-5678",
-    email: "roberto.silva@email.com",
-    avatar: "/placeholder-user.jpg",
-    hasUala: true,
-    isFrequent: true,
-    recentTransfers: [{ amount: 8000, date: "09/01", type: "received" }],
-  },
-  {
-    id: "11",
-    name: "Patricia Vega",
-    phone: "+54 9 11 2345-6789",
-    email: "patricia.vega@email.com",
-    avatar: "/placeholder-user.jpg",
-    hasUala: false,
-    isFrequent: false,
-    recentTransfers: [],
-  },
-  {
-    id: "12",
-    name: "Andrés Castro",
-    phone: "+54 9 11 3456-7890",
-    email: "andres.castro@email.com",
-    avatar: "/placeholder-user.jpg",
-    hasUala: true,
-    isFrequent: true,
-    recentTransfers: [{ amount: 4500, date: "07/01", type: "sent" }],
-  },
 ]
 
-// Mock transactions
 export const mockTransactions: Transaction[] = [
   {
     id: "txn_001",
@@ -186,7 +144,6 @@ export const mockTransactions: Transaction[] = [
   },
 ]
 
-// Mock account
 export const mockAccount: Account = {
   id: "acc_001",
   userId: "user_001",
@@ -199,7 +156,6 @@ export const mockAccount: Account = {
   updatedAt: "2024-01-15T10:30:00Z",
 }
 
-// Mock cards
 export const mockCards: Card[] = [
   {
     id: "card_001",
@@ -223,7 +179,6 @@ export const mockCards: Card[] = [
   },
 ]
 
-// Mock money requests
 export const mockMoneyRequests: MoneyRequest[] = [
   {
     id: "req_001",
@@ -254,31 +209,5 @@ export const mockMoneyRequests: MoneyRequest[] = [
     status: "rejected",
     createdAt: "2024-01-13T11:15:00Z",
     expiresAt: "2024-01-20T11:15:00Z",
-  },
-]
-
-// Mock investments
-export const mockInvestments: Investment[] = [
-  {
-    id: "inv_001",
-    name: "Plazo Fijo UVA",
-    amount: 50000,
-    currentValue: 52500,
-    returnRate: 5.0,
-    startDate: "2024-01-01",
-    endDate: "2024-07-01",
-    status: "active",
-    type: "fixed_term",
-  },
-  {
-    id: "inv_002",
-    name: "Fondo Común de Inversión",
-    amount: 25000,
-    currentValue: 26750,
-    returnRate: 7.0,
-    startDate: "2023-12-15",
-    endDate: "2024-12-15",
-    status: "active",
-    type: "mutual_fund",
   },
 ]
