@@ -42,7 +42,7 @@ export default function TransferDetails({ params }: { params: { id: string } | P
       <div className="bg-white flex-1 rounded-t-3xl p-4 pb-32" data-testid="transfer-history-section">
         <div className="space-y-4" data-testid="transfer-history-list">
           {contact.recentTransfers.map((transfer, index) => (
-            <div key={`transfer-${contact.id}-${transfer.date}-${transfer.amount}`} className="flex items-center justify-between py-4 border-b" data-testid={`transfer-history-item-${index}`}>
+            <div key={`${contact.id}-${transfer.date}-${transfer.amount}-${index}`} className="flex items-center justify-between py-4 border-b" data-testid={`transfer-history-item-${index}`}>
               <div data-testid={`transfer-history-info-${index}`}>
                 <p className="font-semibold" data-testid={`transfer-history-recipient-${index}`}>{contact.name}</p>
                 <p className="text-sm text-gray-500" data-testid={`transfer-history-type-${index}`}>Transferencia enviada</p>
