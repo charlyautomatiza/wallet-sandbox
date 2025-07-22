@@ -18,13 +18,17 @@ export class TransferPage {
   }
 
   /**
-   * Get the tab button to filter contacts by wallet membership
-   * @param hasWallet - true for users with wallet, false for users without
+   * Get the tab button for users with wallet
    */
-  getWalletTabButton(hasWallet: boolean) {
-    return hasWallet 
-      ? this.page.getByRole('button', { name: /Tiene wallet/i })
-      : this.page.getByRole('button', { name: /No tiene wallet/i });
+  getHasWalletTabButton() {
+    return this.page.getByRole('tab', { name: /Tiene wallet/i }).first();
+  }
+
+  /**
+   * Get the tab button for users without wallet
+   */
+  getNoWalletTabButton() {
+    return this.page.getByRole('tab', { name: /No tiene wallet/i }).first();
   }
 
   /**
@@ -47,7 +51,8 @@ export class TransferPage {
    * @param name - Name of the contact to find
    */
   getContact(name: string) {
-    return this.page.getByText(name, { exact: false }).first();
+    // Use a more specific selector that targets contact items
+    return this.page.getByTestId('contact-item').filter({ hasText: name }).first();
   }
 
   /**
@@ -110,8 +115,10 @@ export class TransferPage {
   async completeTransfer(contactName: string, amount: string, hasWallet = true) {
     await this.goto();
     
-    if (!hasWallet) {
-      await this.getWalletTabButton(false).click();
+    if (hasWallet) {
+      await this.getHasWalletTabButton().click();
+    } else {
+      await this.getNoWalletTabButton().click();
     }
     
     await this.searchContact(contactName);

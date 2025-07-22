@@ -13,10 +13,11 @@ test.describe('Immediate Transfer Flow', () => {
     
     // Act - Navigate to home and then to transfers
     await homePage.goto();
-    await page.getByRole('link', { name: /transferir/i }).click();
+    // Use a more specific selector to avoid ambiguity
+    await page.getByRole('main').getByRole('link', { name: 'Transferir' }).click();
     
     // Complete the full transfer flow
-    await transferPage.getWalletTabButton(true).click();
+    await transferPage.getHasWalletTabButton().click();
     await transferPage.searchContact(recipientName);
     await transferPage.selectContact(recipientName);
     await transferPage.getTransferButton().click();
@@ -101,7 +102,7 @@ test.describe('Immediate Transfer Flow', () => {
     
     // Act - Complete transfer to non-wallet user
     await transferPage.goto();
-    await transferPage.getWalletTabButton(false).click();
+    await transferPage.getNoWalletTabButton().click();
     await transferPage.searchContact(recipientName);
     await transferPage.selectContact(recipientName);
     await transferPage.getTransferButton().click();
