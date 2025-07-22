@@ -37,15 +37,22 @@ tests/                  # Automated tests
 
 The project follows strict development and testing standards. Check these resources for more information:
 
+- [GitHub Copilot Instructions](./.github/copilot-instructions.md) - Complete instructions for GitHub Copilot
+- [Cursor Rules](./.cursorrules) - Rules for Cursor AI assistant
 - [Build Standards](./BUILD_STANDARDS.md) - Standards for application development and building
 - [Playwright Test Standards](./PLAYWRIGHT_STANDARDS.md) - Standards for automated testing
 - [Project Backlog](./BACKLOG.md) - User stories and pending tasks
 
 ## Development Process
 
-1. **Backlog Verification**:
-   - Confirm that a US/TT/BG exists for the task to be implemented
-   - If it doesn't exist, create a new one following the standard format
+⚠️ **CRITICAL WORKFLOW REQUIREMENT** ⚠️
+
+1. **Enhanced Task Discovery**:
+   - Check BACKLOG.md first for existing tasks
+   - If not found, automatically search GitHub Issues
+   - Select from related existing tasks when available
+   - Create new GitHub Issue if task doesn't exist anywhere
+   - Confirm task ID (US-XXX, TT-XXX, or BG-XXX) before proceeding
 
 2. **Git Workflow**:
    - Start from updated main: `git checkout main && git pull origin main`
@@ -55,7 +62,13 @@ The project follows strict development and testing standards. Check these resour
    - Push: `git push origin feature/US-XXX-short-description`
    - Create PR and include GitHub Copilot as reviewer
 
-3. **Code Review**:
+3. **Test Automation**:
+   - **Prioritize Playwright MCP Tools**: Use MCP tools when available for test automation
+   - **Validate before publishing**: Always run complete test suite before publishing changes
+   - **Bug Issue Creation**: Create GitHub Issues for application errors detected during testing
+   - Include comprehensive bug reports with logs, screenshots, and Playwright reports
+
+4. **Code Review**:
    - Prioritize and address Copilot's suggestions
    - Ensure that all standards are followed
 

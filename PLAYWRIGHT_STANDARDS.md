@@ -2,43 +2,102 @@
 
 This project includes a comprehensive set of instruction files that define standards and best practices for using Playwright in test automation. These standards are designed to be used with GitHub Copilot and Cursor AI to ensure consistent, maintainable, and reliable test code.
 
+⚠️ **PLAYWRIGHT MCP INTEGRATION** ⚠️
+For test automation tasks, ALWAYS prioritize the use of Playwright MCP tools when available. If MCP tools are not active, validate with the user to activate them before proceeding.
+
 ## Directory Structure
 
 ```
 wallet-sandbox/
 ├── .github/
-│   └── copilot/                   # GitHub Copilot instruction files
-│       ├── README.md              # Overview of all instruction files
-│       ├── playwright-general.md  # General guidelines
-│       ├── playwright-locators.md # Locator strategies
-│       ├── playwright-pom.md      # Page Object Model implementation
-│       ├── playwright-assertions.md # Test assertions and structure
-│       ├── playwright-api-testing.md # API testing standards
-│       ├── playwright-api-mocking.md # API mocking standards
-│       ├── playwright-mcp.md      # Model Context Protocol usage
-│       └── playwright-config.md   # Configuration and best practices
-├── .cursor/
-│   └── rules/                     # Cursor AI-specific rules
-│       └── playwright-tests.md    # Project-specific test standards
-├── .cursorrules                   # General rules for Cursor AI
+│   └── copilot-instructions.md    # Complete GitHub Copilot instructions
+├── .cursorrules                   # Complete Cursor AI rules
+├── tests/
+│   ├── fixtures/                  # Test fixtures and data
+│   ├── pages/                     # Page Object Models
+│   ├── specs/                     # Test specifications
+│   └── utils/                     # Test utilities
 ```
+
+## Enhanced Test Automation Process
+
+### MCP Tools Priority
+
+⚠️ **MANDATORY FOR PLAYWRIGHT AUTOMATION** ⚠️
+
+1. **Tool Verification**:
+   - Before starting any Playwright automation task, verify MCP tools availability
+   - If MCP tools are not active, guide the user through activation process
+   - Provide clear instructions for enabling Playwright MCP extensions
+
+2. **MCP Tool Activation Guide**:
+   ```bash
+   # Verify MCP tools are available
+   # Check if Playwright MCP extension is installed and active
+   # If not available, guide user to:
+   # 1. Install required MCP extensions
+   # 2. Configure VS Code settings
+   # 3. Restart development environment if needed
+   ```
+
+3. **Fallback Strategy**:
+   - Use standard Playwright APIs only when MCP tools are confirmed unavailable
+   - Always inform the user about the benefits of using MCP tools
+   - Suggest MCP tool activation for future test development
+
+### Test Validation and Bug Management
+
+⚠️ **MANDATORY FOR TEST AUTOMATION TASKS** ⚠️
+
+1. **Pre-Publication Validation**:
+   - ALWAYS validate that tests execute successfully before publishing changes
+   - Run the complete test suite to ensure no regressions
+   - Verify test results meet the expected functionality requirements
+
+2. **Application Error Detection**:
+   - When application errors are detected during testing, suggest creating a GitHub Issue for the bug
+   - Never ignore application errors or treat them as test failures
+   - Categorize issues as bugs (BG-XXX format) for separate resolution
+
+3. **Bug Issue Creation Process**:
+   - Automatically offer to create GitHub Issues for detected application bugs
+   - Include comprehensive information in bug reports:
+     - Complete error logs
+     - Screenshots of error states
+     - Full Playwright execution report
+     - Steps to reproduce
+     - Environment details
+
+4. **Error Documentation**:
+   - Attach all relevant test artifacts to bug issues
+   - Include full Playwright HTML reports when available
+   - Provide trace files for complex interaction failures
+   - Link test execution videos when helpful for reproduction
 
 ## Using These Standards
 
 ### For Developers
 
 1. **When Writing New Tests**:
-   - Reference the appropriate instruction files based on what you're working on
-   - Follow the Page Object Model pattern as shown in `tests/pages/HomePage.js`
-   - Structure tests according to the examples in `tests/specs/transfer/transfer-money.spec.js`
+   - **Prioritize MCP Tools**: Always check if Playwright MCP tools are available before starting
+   - Follow the Page Object Model pattern with TypeScript exclusively
+   - Structure tests according to AAA pattern (Arrange-Act-Assert)
+   - Ensure each test is independent and has single responsibility
 
 2. **When Using GitHub Copilot**:
-   - Copilot will be guided by the standards in the `.github/copilot/` directory
-   - When requesting Copilot to generate test code, mention specific aspects like "using role-based locators" or "following our POM pattern"
+   - Copilot follows the complete instructions in `.github/copilot-instructions.md`
+   - Copilot will automatically prioritize MCP tools and guide through activation if needed
+   - Request specific test types like "Generate transfer test with error handling"
 
 3. **When Using Cursor AI**:
-   - The `.cursorrules` file and `.cursor/rules/` directory provide guidance to Cursor AI
-   - Use prompts like "Generate a test for the payment feature following our Playwright standards"
+   - Cursor follows the rules in `.cursorrules` file
+   - Cursor will verify MCP tools availability and guide activation process
+   - Use prompts like "Create end-to-end test for wallet transfer with bug detection"
+
+4. **Task Management Integration**:
+   - Always start with task verification (US-XXX, TT-XXX, or BG-XXX)
+   - If testing reveals application bugs, create GitHub Issues with comprehensive reports
+   - Follow Git workflow requirements before implementing test changes
 
 ### Setting Up Playwright
 

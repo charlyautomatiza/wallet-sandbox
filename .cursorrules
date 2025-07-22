@@ -17,18 +17,33 @@ REFUSE to make or suggest code changes if these steps have not been completed.
 
 ⚠️ **MANDATORY FIRST STEP - NO EXCEPTIONS** ⚠️
 
-1. **Read and verify backlog tasks**:
+1. **Enhanced Task Discovery Process**:
    - FIRST read the BACKLOG.md file to understand current project tasks
-   - Retrieve a list of active tasks from GitHub Issues
+   - If task not found in BACKLOG.md, automatically retrieve and search through GitHub Issues
+   - Analyze both sources to identify relevant tasks and related work
    - IMMEDIATELY ask for the US/TT/BG being implemented
    - If not provided, DO NOT PROCEED until this information is available
-   - Search for the task ID in both BACKLOG.md and GitHub Issues
+   - Search for the task ID in BACKLOG.md first, then in GitHub Issues
    - If found, confirm with the user: "I found [US-XXX]: [task description]. Is this the task you're working on?"
    - Document the ID in all communications: "Working on [US-XXX]: Task description"
-   - If it doesn't exist, STOP and inform the user: "I couldn't find a matching task in the backlog or GitHub Issues."
-   - Help create a new task in GitHub Issues with proper format and require confirmation of the new ID before proceeding
 
-2. **Git Workflow**:
+2. **If the task doesn't exist in BACKLOG.md**:
+   - Automatically fetch and search through GitHub Issues
+   - Present any related existing tasks for user selection
+   - If similar tasks found, ask: "I found these related tasks: [list]. Would you like to work on one of these instead?"
+   - **Confirmation required**: Only when selecting from existing GitHub Issues
+
+3. **If the task doesn't exist in either source**:
+   - Create new task ID based on context and task type
+   - **No confirmation required**: Generate appropriate US-XXX, TT-XXX, or BG-XXX ID automatically
+   - Offer to help create a new GitHub Issue with:
+     - Auto-generated title following the [US/TT/BG-XXX] format
+     - Description using the standard User Story format
+     - Suggested acceptance criteria and labels
+   - Create the GitHub Issue using available tools
+   - Confirm the new task ID before proceeding
+
+4. **Git Workflow**:
    ⚠️ **MANDATORY WORKFLOW - NO EXCEPTIONS** ⚠️
    
    - CONFIRM with the user that they have executed:
@@ -58,12 +73,29 @@ REFUSE to make or suggest code changes if these steps have not been completed.
 
 ## Playwright Test Standards
 
-- Each test MUST be completely independent and self-contained
-- NEVER create tests that depend on other tests run previously
-- Each test MUST have a single responsibility (test ONE thing)
-- Use Page Object Model patterns to organize tests
-- Prioritize role-based locators (getByRole)
-- Use auto-waiting assertions
+⚠️ **PRIORITIZE PLAYWRIGHT MCP TOOLS** ⚠️
+
+1. **MCP Tools Priority**:
+   - For test automation tasks, ALWAYS prioritize the use of Playwright MCP tools when available
+   - If Playwright MCP tools are not active, validate with the user to activate them
+   - Guide users through MCP tool activation process when necessary
+   - Use standard Playwright APIs only when MCP tools are unavailable
+
+2. **Test Validation and Bug Management**:
+   - ALWAYS validate that tests execute successfully before publishing changes
+   - Run the complete test suite to ensure no regressions
+   - When application errors are detected during testing, suggest creating a GitHub Issue for the bug
+   - Never ignore application errors or treat them as test failures
+   - Include comprehensive information in bug reports: logs, screenshots, Playwright reports
+   - Use standardized bug report templates with proper categorization (BG-XXX format)
+
+3. **Test Independence and Responsibility**:
+   - Each test MUST be completely independent and self-contained
+   - NEVER create tests that depend on other tests run previously
+   - Each test MUST have a single responsibility (test ONE thing)
+   - Use Page Object Model patterns to organize tests
+   - Prioritize role-based locators (getByRole)
+   - Use auto-waiting assertions
 
 ## Test Naming Requirements
 
@@ -158,6 +190,35 @@ Create test cases that use mocked API responses:
 
 ## MCP (Model Context Protocol) Usage
 
+⚠️ **PLAYWRIGHT MCP INTEGRATION** ⚠️
+
+1. **Tool Verification**:
+   - Before starting any Playwright automation task, verify MCP tools availability
+   - If MCP tools are not active, guide the user through activation process
+   - Provide clear instructions for enabling Playwright MCP extensions
+
+2. **MCP Tool Activation Guide**:
+   ```bash
+   # Verify MCP tools are available
+   # Check if Playwright MCP extension is installed and active
+   # If not available, guide user to:
+   # 1. Install required MCP extensions
+   # 2. Configure VS Code settings
+   # 3. Restart development environment if needed
+   ```
+
+3. **Test Execution Workflow**:
+   - Design tests using MCP tools when available
+   - Follow Page Object Model patterns
+   - Execute complete test suite before code publication
+   - Validate all tests pass successfully
+   - Review test results for application errors vs. test issues
+
+4. **Error Handling**:
+   - Distinguish between test failures and application bugs
+   - Create appropriate GitHub Issues for application defects
+   - Document all findings with comprehensive evidence
+
 When generating tests with MCP, follow these guidelines:
 
 - Use natural language descriptions for test steps
@@ -166,3 +227,29 @@ When generating tests with MCP, follow these guidelines:
 - Include error handling and edge cases
 
 For more detailed standards, refer to the files in .github/copilot/ directory.
+
+## Documentation Synchronization
+
+⚠️ **CRITICAL REQUIREMENT FOR RULE CHANGES** ⚠️
+
+When making changes to these rules or the GitHub Instructions:
+
+1. **Synchronization Requirement**:
+   - ALWAYS update both `.cursorrules` and `.github/copilot-instructions.md` simultaneously
+   - Ensure consistency between both files
+   - Document any differences if they exist for specific reasons
+
+2. **Documentation Chain Updates**:
+   - Update `BUILD_STANDARDS.md` to reflect any process changes
+   - Update `PLAYWRIGHT_STANDARDS.md` for test-related changes
+   - Update `README.md` if the changes affect the development workflow
+
+3. **Version Control**:
+   - Include all updated files in the same commit
+   - Reference the changes in commit messages
+   - Use format: `[TT-XXX] Update development rules and documentation`
+
+4. **Testing and Validation**:
+   - Validate that both AI assistants (Cursor and GitHub Copilot) can follow the updated rules
+   - Test the workflows described in the documentation
+   - Ensure examples and code snippets are accurate and up-to-date
