@@ -1,7 +1,8 @@
 export const STORAGE_KEYS = {
   TRANSFERS: "banking_transfers",
   CONTACTS: "banking_contacts",
-  USER_PREFERENCES: "banking_preferences",
+  ACCOUNT: "banking_account",
+  REQUESTS: "banking_requests",
 } as const
 
 export const storage = {

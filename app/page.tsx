@@ -1,251 +1,174 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useSelector, useDispatch } from "react-redux"
-import Link from "next/link"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
+import { Eye, EyeOff, Plus, Send, Download, CreditCard, TrendingUp } from "lucide-react"
+import Link from "next/link"
 import { TransferHistory } from "@/components/TransferHistory"
-import { ArrowUpRight, ArrowDownLeft, Plus, QrCode, CreditCard, TrendingUp, Eye, EyeOff, RefreshCw } from "lucide-react"
-import type { RootState } from "@/store/store"
-import { AccountService } from "@/lib/api/services/account.service"
-import type { Account } from "@/lib/api/types"
+import { mockAccount, mockContacts } from "@/lib/api/mock-data"
 
 export default function HomePage() {
-  const dispatch = useDispatch()
-  const { contacts } = useSelector((state: RootState) => state.transfer)
+  const [showBalance, setShowBalance] = useState(true)
+  const [account, setAccount] = useState(mockAccount)
 
-  const [account, setAccount] = useState<Account | null>(null)
-  const [isBalanceVisible, setIsBalanceVisible] = useState(true)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const loadAccountData = async () => {
-      try {
-        const response = await AccountService.getAccount()
-        if (response.success) {
-          setAccount(response.data || null)
-        }
-      } catch (error) {
-        console.error("Failed to load account data:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadAccountData()
-  }, [])
-
-  const formatBalance = (balance: number) => {
-    if (!isBalanceVisible) return "••••••"
-
+  const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-AR", {
       style: "currency",
-      currency: "ARS",
-      minimumFractionDigits: 0,
-    }).format(balance)
+      currency: account.currency,
+      minimumFractionDigits: 2,
+    }).format(amount)
   }
 
-  const recentContacts = contacts.filter((contact) => contact.recentTransfers.length > 0).slice(0, 4)
-
-  const quickActions = [
-    {
-      title: "Transferir",
-      description: "Enviar dinero",
-      icon: ArrowUpRight,
-      href: "/transfer",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-    },
-    {
-      title: "Pedir",
-      description: "Solicitar dinero",
-      icon: ArrowDownLeft,
-      href: "/request",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-    {
-      title: "Escanear",
-      description: "Código QR",
-      icon: QrCode,
-      href: "/scan",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
-    {
-      title: "Recargar",
-      description: "Agregar dinero",
-      icon: Plus,
-      href: "/recharge",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-    },
-  ]
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-md mx-auto space-y-6">
-          <div className="flex items-center justify-center py-8">
-            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-muted-foreground">Cargando...</span>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const recentContacts = mockContacts.slice(0, 6)
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-md mx-auto space-y-6">
-        {/* Balance Card */}
-        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-blue-100 text-sm">Saldo disponible</p>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-3xl font-bold">{formatBalance(account?.balance || 0)}</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsBalanceVisible(!isBalanceVisible)}
-                    className="text-white hover:bg-white/20 p-1 h-auto"
-                  >
-                    {isBalanceVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="text-right">
-                <Badge variant="secondary" className="bg-white/20 text-white border-0">
-                  Cuenta Principal
-                </Badge>
-              </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-md mx-auto bg-white min-h-screen">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-xl font-semibold">¡Hola!</h1>
+              <p className="text-blue-100">Bienvenido a tu banco</p>
             </div>
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-sm font-semibold">U</span>
+            </div>
+          </div>
 
-            <div className="flex items-center gap-4 text-sm text-blue-100">
-              <div className="flex items-center gap-1">
-                <CreditCard className="h-4 w-4" />
-                <span>•••• {account?.accountNumber?.slice(-4) || "1234"}</span>
+          {/* Balance Card */}
+          <Card className="bg-white/10 border-white/20 text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-blue-100">Saldo disponible</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowBalance(!showBalance)}
+                  className="text-white hover:bg-white/20 p-1 h-auto"
+                >
+                  {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
               </div>
-              <div className="flex items-center gap-1">
-                <TrendingUp className="h-4 w-4" />
-                <span>+5.2% este mes</span>
+              <div className="text-2xl font-bold">{showBalance ? formatCurrency(account.balance) : "••••••"}</div>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                  {account.currency}
+                </Badge>
+                <span className="text-xs text-blue-100">Cuenta: ****{account.accountNumber.slice(-4)}</span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Acciones rápidas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              {quickActions.map((action) => (
-                <Link key={action.title} href={action.href}>
-                  <div className="flex flex-col items-center p-4 rounded-lg border hover:bg-gray-50 transition-colors">
-                    <div className={`p-3 rounded-full ${action.bgColor} mb-2`}>
-                      <action.icon className={`h-6 w-6 ${action.color}`} />
-                    </div>
-                    <h3 className="font-medium text-sm">{action.title}</h3>
-                    <p className="text-xs text-muted-foreground text-center">{action.description}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Acciones rápidas</h2>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <Link href="/transfer">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <Send className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                  <p className="font-medium">Transferir</p>
+                  <p className="text-xs text-gray-500">Enviar dinero</p>
+                </CardContent>
+              </Card>
+            </Link>
 
-        {/* Recent Contacts */}
-        {recentContacts.length > 0 && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Contactos recientes</CardTitle>
+            <Link href="/request">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <Download className="h-8 w-8 text-green-600 mx-auto mb-2" />
+                  <p className="font-medium">Pedir</p>
+                  <p className="text-xs text-gray-500">Solicitar dinero</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/recharge">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <Plus className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+                  <p className="font-medium">Recargar</p>
+                  <p className="text-xs text-gray-500">Agregar dinero</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/payments">
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <CreditCard className="h-8 w-8 text-orange-600 mx-auto mb-2" />
+                  <p className="font-medium">Pagar</p>
+                  <p className="text-xs text-gray-500">Servicios</p>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+
+          {/* Recent Contacts */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Contactos recientes</h2>
               <Link href="/transfer">
                 <Button variant="ghost" size="sm">
                   Ver todos
                 </Button>
               </Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {recentContacts.map((contact) => (
+                <Link key={contact.id} href={`/transfer/${contact.id}`}>
+                  <div className="flex flex-col items-center gap-2 min-w-[60px] cursor-pointer">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                      {contact.initials}
+                    </div>
+                    <span className="text-xs text-center text-gray-600 max-w-[60px] truncate">
+                      {contact.name.split(" ")[0]}
+                    </span>
+                    {contact.hasUala && (
+                      <Badge variant="secondary" className="text-xs px-1 py-0">
+                        Ualá
+                      </Badge>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Investment Summary */}
+          <Card className="mb-6">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                Inversiones
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {recentContacts.map((contact, index) => (
-                  <div key={contact.id}>
-                    <Link href={`/transfer/${contact.id}`}>
-                      <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback className="bg-blue-100 text-blue-600">{contact.initials}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{contact.name}</p>
-                          <div className="flex items-center gap-2">
-                            {contact.hasUala && (
-                              <Badge variant="secondary" className="text-xs">
-                                Ualá
-                              </Badge>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                              {contact.recentTransfers.length} transferencia
-                              {contact.recentTransfers.length !== 1 ? "s" : ""}
-                            </p>
-                          </div>
-                        </div>
-                        <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </Link>
-                    {index < recentContacts.length - 1 && <Separator className="mt-3" />}
-                  </div>
-                ))}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Total invertido</p>
+                  <p className="text-lg font-semibold text-green-600">$225.000</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">Ganancia</p>
+                  <p className="text-lg font-semibold text-green-600">+$8.500</p>
+                </div>
               </div>
+              <Link href="/invest">
+                <Button variant="outline" className="w-full mt-3 bg-transparent" size="sm">
+                  Ver inversiones
+                </Button>
+              </Link>
             </CardContent>
           </Card>
-        )}
 
-        {/* Transfer History */}
-        <TransferHistory />
-
-        {/* Investment Summary */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Inversiones</CardTitle>
-            <Link href="/invest">
-              <Button variant="ghost" size="sm">
-                Ver todas
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-sm">Fondo Común de Inversión</p>
-                  <p className="text-xs text-muted-foreground">Renta mixta</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-green-600">+5.0%</p>
-                  <p className="text-xs text-muted-foreground">$525.000</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-sm">Plazo Fijo UVA</p>
-                  <p className="text-xs text-muted-foreground">30 días</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-blue-600">+5.0%</p>
-                  <p className="text-xs text-muted-foreground">$315.000</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Transfer History */}
+          <TransferHistory />
+        </div>
       </div>
     </div>
   )
