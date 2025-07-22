@@ -1,39 +1,45 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpRight, ArrowDownLeft, RefreshCw, Clock, CheckCircle } from "lucide-react"
 import { TransferService } from "@/lib/api/services/transfer.service"
+import { ArrowUpRight, ArrowDownLeft, RefreshCw, Clock, CheckCircle, XCircle } from "lucide-react"
 import type { Transaction } from "@/lib/api/types"
 
-export function TransferHistory() {
+interface TransferHistoryProps {
+  limit?: number
+  showHeader?: boolean
+}
+
+export default function TransferHistory({ limit = 10, showHeader = true }: TransferHistoryProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const loadTransferHistory = async () => {
+  const loadTransactions = async () => {
     try {
       setIsLoading(true)
       setError(null)
-      const response = await TransferService.getTransferHistory(20)
 
-      if (response.success) {
-        setTransactions(response.data)
+      const result = await TransferService.getTransferHistory(limit)
+
+      if (result.success) {
+        setTransactions(result.data || [])
       } else {
-        setError(response.error || "Error al cargar el historial")
+        setError(result.error || "Failed to load transactions")
       }
     } catch (err) {
-      setError("Error al cargar el historial de transferencias")
+      setError("An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    loadTransferHistory()
-  }, [])
+    loadTransactions()
+  }, [limit])
 
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("es-AR", {
@@ -49,57 +55,56 @@ export function TransferHistory() {
     return date.toLocaleDateString("es-AR", {
       day: "2-digit",
       month: "2-digit",
-      year: "numeric",
+      year: "2-digit",
     })
   }
 
-  const getTransactionIcon = (amount: number) => {
-    return amount < 0 ? (
-      <ArrowUpRight className="h-4 w-4 text-red-500" />
-    ) : (
-      <ArrowDownLeft className="h-4 w-4 text-green-500" />
-    )
-  }
-
-  const getStatusBadge = (status: string) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return (
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Completada
-          </Badge>
-        )
+        return <CheckCircle className="h-4 w-4 text-green-500" />
       case "pending":
-        return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-            <Clock className="h-3 w-3 mr-1" />
-            Pendiente
-          </Badge>
-        )
+        return <Clock className="h-4 w-4 text-yellow-500" />
+      case "failed":
+        return <XCircle className="h-4 w-4 text-red-500" />
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return <Clock className="h-4 w-4 text-gray-500" />
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-100 text-green-800"
+      case "pending":
+        return "bg-yellow-100 text-yellow-800"
+      case "failed":
+        return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
   }
 
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Historial de Transferencias
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          </CardTitle>
-        </CardHeader>
+        {showHeader && (
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ArrowUpRight className="h-5 w-5" />
+              Historial de Transferencias
+            </CardTitle>
+          </CardHeader>
+        )}
         <CardContent>
           <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
+            {[...Array(3)].map((_, i) => (
               <div key={i} className="flex items-center justify-between p-4 border rounded-lg animate-pulse">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                  <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
                   <div className="space-y-2">
                     <div className="w-32 h-4 bg-gray-200 rounded"></div>
-                    <div className="w-24 h-3 bg-gray-200 rounded"></div>
+                    <div className="w-20 h-3 bg-gray-200 rounded"></div>
                   </div>
                 </div>
                 <div className="w-20 h-4 bg-gray-200 rounded"></div>
@@ -114,25 +119,46 @@ export function TransferHistory() {
   if (error) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Historial de Transferencias
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={loadTransferHistory}
-              className="flex items-center gap-2 bg-transparent"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Reintentar
-            </Button>
-          </CardTitle>
-        </CardHeader>
+        {showHeader && (
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ArrowUpRight className="h-5 w-5" />
+              Historial de Transferencias
+            </CardTitle>
+          </CardHeader>
+        )}
         <CardContent>
           <div className="text-center py-8">
+            <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={loadTransferHistory} variant="outline">
+            <Button onClick={loadTransactions} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
               Reintentar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <Card>
+        {showHeader && (
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ArrowUpRight className="h-5 w-5" />
+              Historial de Transferencias
+            </CardTitle>
+          </CardHeader>
+        )}
+        <CardContent>
+          <div className="text-center py-8">
+            <ArrowUpRight className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500 mb-4">No hay transferencias registradas</p>
+            <Button onClick={loadTransactions} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Actualizar
             </Button>
           </div>
         </CardContent>
@@ -142,58 +168,60 @@ export function TransferHistory() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Historial de Transferencias
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadTransferHistory}
-            className="flex items-center gap-2 bg-transparent"
-          >
+      {showHeader && (
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <ArrowUpRight className="h-5 w-5" />
+            Historial de Transferencias
+          </CardTitle>
+          <Button onClick={loadTransactions} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4" />
-            Actualizar
           </Button>
-        </CardTitle>
-      </CardHeader>
+        </CardHeader>
+      )}
       <CardContent>
-        {transactions.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500 mb-4">No hay transferencias registradas</p>
-            <p className="text-sm text-gray-400">Las transferencias que realices aparecerán aquí</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {transactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0">{getTransactionIcon(transaction.amount)}</div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900 truncate">
-                      {transaction.contactName || transaction.description}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <p className="text-sm text-gray-500">{formatDate(transaction.date)}</p>
-                      {getStatusBadge(transaction.status)}
-                    </div>
-                  </div>
+        <div className="space-y-4">
+          {transactions.map((transaction) => (
+            <div
+              key={transaction.id}
+              className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-full ${transaction.amount < 0 ? "bg-red-100" : "bg-green-100"}`}>
+                  {transaction.amount < 0 ? (
+                    <ArrowUpRight className="h-5 w-5 text-red-600" />
+                  ) : (
+                    <ArrowDownLeft className="h-5 w-5 text-green-600" />
+                  )}
                 </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${transaction.amount < 0 ? "text-red-600" : "text-green-600"}`}>
-                    {transaction.amount < 0 ? "-" : "+"}
-                    {formatAmount(transaction.amount)}
-                  </p>
-                  {transaction.balance && (
-                    <p className="text-xs text-gray-500 mt-1">Saldo: {formatAmount(transaction.balance)}</p>
+                <div>
+                  <p className="font-medium text-sm">{transaction.description}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-xs text-gray-500">{formatDate(transaction.date)}</p>
+                    <Badge variant="secondary" className={`text-xs ${getStatusColor(transaction.status)}`}>
+                      <span className="flex items-center gap-1">
+                        {getStatusIcon(transaction.status)}
+                        {transaction.status}
+                      </span>
+                    </Badge>
+                  </div>
+                  {transaction.contactName && (
+                    <p className="text-xs text-gray-600 mt-1">Para: {transaction.contactName}</p>
                   )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+              <div className="text-right">
+                <p className={`font-semibold ${transaction.amount < 0 ? "text-red-600" : "text-green-600"}`}>
+                  {transaction.amount < 0 ? "-" : "+"}
+                  {formatAmount(transaction.amount)}
+                </p>
+                {transaction.balance && (
+                  <p className="text-xs text-gray-500">Saldo: {formatAmount(transaction.balance)}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   )

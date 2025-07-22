@@ -5,36 +5,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Eye, EyeOff, Send, QrCode, CreditCard, TrendingUp, Plus, ArrowDownLeft, Smartphone, Users } from "lucide-react"
-import Link from "next/link"
-import { TransferHistory } from "@/components/TransferHistory"
+import TransferHistory from "@/components/TransferHistory"
 import { AccountService } from "@/lib/api/services/account.service"
 import { TransferService } from "@/lib/api/services/transfer.service"
+import {
+  Send,
+  Download,
+  Smartphone,
+  CreditCard,
+  TrendingUp,
+  Eye,
+  EyeOff,
+  Plus,
+  ArrowUpRight,
+  Building2,
+  Zap,
+} from "lucide-react"
+import Link from "next/link"
 import type { Account, Contact } from "@/lib/api/types"
 
 export default function HomePage() {
-  const [showBalance, setShowBalance] = useState(true)
   const [account, setAccount] = useState<Account | null>(null)
-  const [recentContacts, setRecentContacts] = useState<Contact[]>([])
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [showBalance, setShowBalance] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Load account data
-        const accountResponse = await AccountService.getAccount()
-        if (accountResponse.success) {
-          setAccount(accountResponse.data)
+        const [accountResult, contactsResult] = await Promise.all([
+          AccountService.getAccount(),
+          TransferService.getContacts(),
+        ])
+
+        if (accountResult.success) {
+          setAccount(accountResult.data)
         }
 
-        // Load recent contacts
-        const contactsResponse = await TransferService.getContacts()
-        if (contactsResponse.success) {
-          // Get contacts with recent transfers (first 6)
-          const contactsWithTransfers = contactsResponse.data
-            .filter((contact) => contact.recentTransfers.length > 0)
-            .slice(0, 6)
-          setRecentContacts(contactsWithTransfers)
+        if (contactsResult.success) {
+          setContacts(contactsResult.data?.slice(0, 6) || [])
         }
       } catch (error) {
         console.error("Error loading data:", error)
@@ -50,179 +59,165 @@ export default function HomePage() {
     return new Intl.NumberFormat("es-AR", {
       style: "currency",
       currency: "ARS",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(balance)
   }
 
-  const quickActions = [
-    {
-      title: "Transferir",
-      description: "Enviar dinero",
-      icon: Send,
-      href: "/transfer",
-      color: "bg-blue-500",
-    },
-    {
-      title: "Pedir",
-      description: "Solicitar dinero",
-      icon: ArrowDownLeft,
-      href: "/request",
-      color: "bg-green-500",
-    },
-    {
-      title: "Escanear",
-      description: "Código QR",
-      icon: QrCode,
-      href: "/scan",
-      color: "bg-purple-500",
-    },
-    {
-      title: "Recargar",
-      description: "Celular/SUBE",
-      icon: Smartphone,
-      href: "/recharge",
-      color: "bg-orange-500",
-    },
-    {
-      title: "Pagos",
-      description: "Servicios",
-      icon: CreditCard,
-      href: "/payments",
-      color: "bg-red-500",
-    },
-    {
-      title: "Invertir",
-      description: "Hacer crecer tu plata",
-      icon: TrendingUp,
-      href: "/invest",
-      color: "bg-indigo-500",
-    },
-  ]
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+  }
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="max-w-md mx-auto space-y-6">
-          {/* Balance Card Skeleton */}
-          <Card className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="h-4 bg-gray-200 rounded w-24 mb-4"></div>
-              <div className="h-8 bg-gray-200 rounded w-48 mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-32"></div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions Skeleton */}
-          <Card className="animate-pulse">
-            <CardContent className="p-6">
-              <div className="h-5 bg-gray-200 rounded w-32 mb-4"></div>
-              <div className="grid grid-cols-3 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="text-center">
-                    <div className="w-12 h-12 bg-gray-200 rounded-full mx-auto mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-16 mx-auto mb-1"></div>
-                    <div className="h-2 bg-gray-200 rounded w-12 mx-auto"></div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="animate-pulse">
+            <div className="h-32 bg-gray-200 rounded-lg mb-6"></div>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-20 bg-gray-200 rounded-lg"></div>
+              ))}
+            </div>
+            <div className="h-48 bg-gray-200 rounded-lg"></div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-md mx-auto space-y-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-md mx-auto p-4 space-y-6">
         {/* Balance Card */}
         <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Tu dinero</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowBalance(!showBalance)}
-                className="text-white hover:bg-white/20"
-              >
-                {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
+              <div>
+                <p className="text-blue-100 text-sm">Saldo disponible</p>
+                <div className="flex items-center gap-2">
+                  {showBalance ? (
+                    <h2 className="text-2xl font-bold">{account ? formatBalance(account.balance) : "$0,00"}</h2>
+                  ) : (
+                    <h2 className="text-2xl font-bold">••••••</h2>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowBalance(!showBalance)}
+                    className="text-white hover:bg-white/20 p-1"
+                  >
+                    {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-blue-100 text-xs">CBU</p>
+                <p className="text-xs font-mono">{account?.cbu?.slice(-8) || "••••••••"}</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <p className="text-3xl font-bold">{showBalance ? formatBalance(account?.balance || 0) : "••••••"}</p>
-              <p className="text-blue-100 text-sm">Dinero disponible • {account?.currency || "ARS"}</p>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-xs">Alias</p>
+                <p className="text-sm font-medium">{account?.alias || "BANCO.DIGITAL.UALA"}</p>
+              </div>
+              <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                {account?.currency || "ARS"}
+              </Badge>
             </div>
           </CardContent>
         </Card>
 
         {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Acciones rápidas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4">
-              {quickActions.map((action) => (
-                <Link key={action.title} href={action.href}>
-                  <div className="text-center group cursor-pointer">
-                    <div
-                      className={`w-12 h-12 ${action.color} rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform`}
-                    >
-                      <action.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-900">{action.title}</p>
-                    <p className="text-xs text-gray-500">{action.description}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-2 gap-4">
+          <Link href="/transfer">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Send className="h-6 w-6 text-blue-600" />
+                </div>
+                <p className="font-medium text-sm">Transferir</p>
+                <p className="text-xs text-gray-500">Enviar dinero</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/request">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Download className="h-6 w-6 text-green-600" />
+                </div>
+                <p className="font-medium text-sm">Pedir</p>
+                <p className="text-xs text-gray-500">Solicitar dinero</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/recharge">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Smartphone className="h-6 w-6 text-orange-600" />
+                </div>
+                <p className="font-medium text-sm">Recargar</p>
+                <p className="text-xs text-gray-500">Celular</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/payments">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <CreditCard className="h-6 w-6 text-purple-600" />
+                </div>
+                <p className="font-medium text-sm">Pagar</p>
+                <p className="text-xs text-gray-500">Servicios</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
 
         {/* Recent Contacts */}
-        {recentContacts.length > 0 && (
+        {contacts.length > 0 && (
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center justify-between">
                 Contactos recientes
                 <Link href="/transfer">
                   <Button variant="ghost" size="sm">
-                    <Users className="h-4 w-4 mr-2" />
-                    Ver todos
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </Link>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
-                {recentContacts.map((contact) => (
+                {contacts.map((contact) => (
                   <Link key={contact.id} href={`/transfer/${contact.id}`}>
-                    <div className="text-center group cursor-pointer">
+                    <div className="text-center cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
                       <div className="relative">
-                        <Avatar className="w-12 h-12 mx-auto mb-2 group-hover:scale-110 transition-transform">
+                        <Avatar className="w-12 h-12 mx-auto mb-2">
                           <AvatarImage src={contact.avatar || "/placeholder.svg"} alt={contact.name} />
-                          <AvatarFallback>
-                            {contact.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                              .toUpperCase()}
-                          </AvatarFallback>
+                          <AvatarFallback className="text-xs">{getInitials(contact.name)}</AvatarFallback>
                         </Avatar>
                         {contact.hasUala && (
-                          <Badge
-                            variant="secondary"
-                            className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs px-1 py-0 h-5"
-                          >
-                            U
-                          </Badge>
+                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                            <Zap className="h-3 w-3 text-white" />
+                          </div>
                         )}
                       </div>
-                      <p className="text-sm font-medium text-gray-900 truncate">{contact.name.split(" ")[0]}</p>
-                      {contact.recentTransfers.length > 0 && (
-                        <p className="text-xs text-gray-500">{contact.recentTransfers[0].date}</p>
+                      <p className="text-xs font-medium truncate">{contact.name.split(" ")[0]}</p>
+                      {contact.hasUala && (
+                        <Badge variant="secondary" className="text-xs mt-1 bg-blue-100 text-blue-800">
+                          Ualá
+                        </Badge>
                       )}
                     </div>
                   </Link>
@@ -234,13 +229,15 @@ export default function HomePage() {
 
         {/* Investment Summary */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
-              Inversiones
+              <span className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Inversiones
+              </span>
               <Link href="/invest">
                 <Button variant="ghost" size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Invertir
+                  <ArrowUpRight className="h-4 w-4" />
                 </Button>
               </Link>
             </CardTitle>
@@ -249,22 +246,23 @@ export default function HomePage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-white" />
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <Building2 className="h-4 w-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Plazo Fijo UVA</p>
-                    <p className="text-sm text-gray-500">Vence 15/06/2024</p>
+                    <p className="font-medium text-sm">Plazo Fijo</p>
+                    <p className="text-xs text-gray-500">45 días • 8.5% TNA</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-green-600">+$5.200</p>
-                  <p className="text-xs text-gray-500">5.2% anual</p>
+                  <p className="font-semibold text-sm">$50.000</p>
+                  <p className="text-xs text-green-600">+$1.250</p>
                 </div>
               </div>
+
               <div className="text-center py-2">
                 <Link href="/invest">
-                  <Button variant="outline" className="w-full bg-transparent">
+                  <Button variant="outline" size="sm" className="w-full bg-transparent">
                     Ver todas las inversiones
                   </Button>
                 </Link>
@@ -274,7 +272,7 @@ export default function HomePage() {
         </Card>
 
         {/* Transfer History */}
-        <TransferHistory />
+        <TransferHistory limit={5} />
       </div>
     </div>
   )

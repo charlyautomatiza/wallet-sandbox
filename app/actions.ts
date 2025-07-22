@@ -18,14 +18,14 @@ export async function handleTransfer(formData: FormData) {
   if (!contactId || !contactName || !amount || amount <= 0) {
     return {
       success: false,
-      error: "Todos los campos son requeridos y el monto debe ser mayor a 0",
+      error: "Missing required fields or invalid amount",
     }
   }
 
-  if (amount > 1000000) {
+  if (amount > 999999) {
     return {
       success: false,
-      error: "El monto máximo por transferencia es $1.000.000",
+      error: "Amount exceeds maximum limit",
     }
   }
 
@@ -39,21 +39,21 @@ export async function handleTransfer(formData: FormData) {
     })
 
     if (result.success) {
-      revalidatePath("/")
       revalidatePath("/transfer")
-      redirect(`/transfer/${contactId}/success?amount=${amount}&name=${encodeURIComponent(contactName)}`)
+      revalidatePath("/")
+      redirect(`/transfer/${contactId}/success?transactionId=${result.data?.transactionId}`)
     }
 
     return result
   } catch (error) {
     return {
       success: false,
-      error: "Error interno del servidor. Intenta nuevamente.",
+      error: "An unexpected error occurred",
     }
   }
 }
 
-// Request money action
+// Money request action
 export async function handleRequestMoney(formData: FormData) {
   const contactId = formData.get("contactId") as string
   const amount = Number.parseFloat(formData.get("amount") as string)
@@ -63,21 +63,14 @@ export async function handleRequestMoney(formData: FormData) {
   if (!amount || amount <= 0) {
     return {
       success: false,
-      error: "El monto debe ser mayor a 0",
+      error: "Invalid amount",
     }
   }
 
   if (!description || description.trim().length === 0) {
     return {
       success: false,
-      error: "La descripción es requerida",
-    }
-  }
-
-  if (amount > 500000) {
-    return {
-      success: false,
-      error: "El monto máximo por solicitud es $500.000",
+      error: "Description is required",
     }
   }
 
@@ -90,18 +83,14 @@ export async function handleRequestMoney(formData: FormData) {
 
     if (result.success) {
       revalidatePath("/request")
-      return {
-        success: true,
-        message: "Solicitud de dinero enviada exitosamente",
-        data: result.data,
-      }
+      revalidatePath("/")
     }
 
     return result
   } catch (error) {
     return {
       success: false,
-      error: "Error interno del servidor. Intenta nuevamente.",
+      error: "Failed to create money request",
     }
   }
 }
@@ -113,17 +102,14 @@ export async function handleAcceptRequest(requestId: string) {
 
     if (result.success) {
       revalidatePath("/request")
-      return {
-        success: true,
-        message: "Solicitud aceptada exitosamente",
-      }
+      revalidatePath("/")
     }
 
     return result
   } catch (error) {
     return {
       success: false,
-      error: "Error al aceptar la solicitud",
+      error: "Failed to accept request",
     }
   }
 }
@@ -135,39 +121,14 @@ export async function handleRejectRequest(requestId: string) {
 
     if (result.success) {
       revalidatePath("/request")
-      return {
-        success: true,
-        message: "Solicitud rechazada",
-      }
+      revalidatePath("/")
     }
 
     return result
   } catch (error) {
     return {
       success: false,
-      error: "Error al rechazar la solicitud",
-    }
-  }
-}
-
-// Cancel money request action
-export async function handleCancelRequest(requestId: string) {
-  try {
-    const result = await RequestService.cancelMoneyRequest(requestId)
-
-    if (result.success) {
-      revalidatePath("/request")
-      return {
-        success: true,
-        message: "Solicitud cancelada exitosamente",
-      }
-    }
-
-    return result
-  } catch (error) {
-    return {
-      success: false,
-      error: "Error al cancelar la solicitud",
+      error: "Failed to reject request",
     }
   }
 }
@@ -179,18 +140,13 @@ export async function handleUpdateBalance(newBalance: number) {
 
     if (result.success) {
       revalidatePath("/")
-      return {
-        success: true,
-        message: "Saldo actualizado exitosamente",
-        data: result.data,
-      }
     }
 
     return result
   } catch (error) {
     return {
       success: false,
-      error: "Error al actualizar el saldo",
+      error: "Failed to update balance",
     }
   }
 }
@@ -202,18 +158,13 @@ export async function handleToggleCard(cardId: string) {
 
     if (result.success) {
       revalidatePath("/more")
-      return {
-        success: true,
-        message: result.message,
-        data: result.data,
-      }
     }
 
     return result
   } catch (error) {
     return {
       success: false,
-      error: "Error al cambiar el estado de la tarjeta",
+      error: "Failed to toggle card status",
     }
   }
 }
