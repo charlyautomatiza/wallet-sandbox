@@ -16,37 +16,40 @@ export default function TransferDetails({ params }: { params: { id: string } | P
   if (!contact) return null
 
   return (
-    <div className="min-h-screen bg-blue-600">
+    <div className="min-h-screen bg-blue-600" data-testid="transfer-details-page">
       {/* Header */}
-      <div className="p-4 flex items-center justify-between text-white">
-        <Link href="/transfer" className="p-2" aria-label="Volver">
+      <div className="p-4 flex items-center justify-between text-white" data-testid="transfer-details-header">
+        <Link href="/transfer" className="p-2" aria-label="Volver" data-testid="transfer-details-back-button">
           <ArrowLeft size={24} />
         </Link>
-        <button className="p-2" aria-label="Más opciones">
+        <button className="p-2" aria-label="Más opciones" data-testid="transfer-details-menu-button">
           <MoreVertical size={24} />
         </button>
       </div>
 
       {/* Profile */}
-      <div className="flex flex-col items-center text-white mb-8">
-        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-blue-600 text-2xl font-semibold mb-4">
+      <div className="flex flex-col items-center text-white mb-8" data-testid="contact-profile-section">
+        <div 
+          className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-blue-600 text-2xl font-semibold mb-4"
+          data-testid="contact-profile-avatar"
+        >
           {contact.initials}
         </div>
-        <h1 className="text-2xl font-semibold">{contact.name}</h1>
+        <h1 className="text-2xl font-semibold" data-testid="contact-profile-name">{contact.name}</h1>
       </div>
 
       {/* Transfer History */}
-      <div className="bg-white flex-1 rounded-t-3xl p-4 pb-32">
-        <div className="space-y-4">
+      <div className="bg-white flex-1 rounded-t-3xl p-4 pb-32" data-testid="transfer-history-section">
+        <div className="space-y-4" data-testid="transfer-history-list">
           {contact.recentTransfers.map((transfer, index) => (
-            <div key={index} className="flex items-center justify-between py-4 border-b">
-              <div>
-                <p className="font-semibold">{contact.name}</p>
-                <p className="text-sm text-gray-500">Transferencia enviada</p>
+            <div key={`transfer-${contact.id}-${transfer.date}-${transfer.amount}`} className="flex items-center justify-between py-4 border-b" data-testid={`transfer-history-item-${index}`}>
+              <div data-testid={`transfer-history-info-${index}`}>
+                <p className="font-semibold" data-testid={`transfer-history-recipient-${index}`}>{contact.name}</p>
+                <p className="text-sm text-gray-500" data-testid={`transfer-history-type-${index}`}>Transferencia enviada</p>
               </div>
-              <div className="text-right">
-                <p className="font-semibold">${transfer.amount.toLocaleString()}</p>
-                <p className="text-sm text-gray-500">{transfer.date}</p>
+              <div className="text-right" data-testid={`transfer-history-amount-info-${index}`}>
+                <p className="font-semibold" data-testid={`transfer-history-amount-${index}`}>${transfer.amount.toLocaleString()}</p>
+                <p className="text-sm text-gray-500" data-testid={`transfer-history-date-${index}`}>{transfer.date}</p>
               </div>
             </div>
           ))}
@@ -54,12 +57,12 @@ export default function TransferDetails({ params }: { params: { id: string } | P
       </div>
 
       {/* Fixed Button - Above bottom navigation */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-white border-t z-50">
+      <div className="fixed bottom-20 left-0 right-0 p-4 bg-white border-t z-50" data-testid="send-money-section">
         <Link
           href={`/transfer/${id}/amount`}
           className="block w-full bg-blue-600 text-white py-4 rounded-lg text-center font-semibold shadow-lg"
-          role="button"
           aria-label={`Enviar dinero a ${contact.name}`}
+          data-testid="send-money-button"
         >
           Enviar plata
         </Link>
