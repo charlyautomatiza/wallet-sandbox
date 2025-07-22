@@ -19,7 +19,17 @@ All code modifications must be associated with a backlog item:
 - **Technical Task (TT)**: Technical improvements, refactoring, etc.
 - **Bug (BG)**: Correction of identified errors
 
-**IMPORTANT**: Before starting any change, always verify that a corresponding US/TT/BG exists in the GitHub Issues backlog.
+**Enhanced Task Discovery Process**:
+
+1. **First**: Check BACKLOG.md file for existing tasks
+2. **If not found**: Automatically retrieve and search through GitHub Issues
+3. **Task ID Confirmation**:
+   - If tasks are found in GitHub Issues: Ask user to confirm which task to work on
+   - If no tasks are found in either source: Create new task ID based on context without requiring confirmation
+4. **Related Task Selection**: Present similar existing tasks for user selection when available
+5. **New Task Creation**: Guide through GitHub Issue creation when no related tasks exist
+
+**IMPORTANT**: The AI assistant will handle task discovery and ID generation automatically, requiring user confirmation only when selecting from existing GitHub Issues.
 
 ### 2. Git Workflow
 
@@ -75,21 +85,53 @@ All code modifications must be associated with a backlog item:
 ### 4. Testing
 
 - Create automated tests with Playwright for new features
+- **Prioritize Playwright MCP Tools**: Always use MCP tools when available for test automation
 - Follow the Page Object Model pattern
 - Ensure tests are independent and deterministic
+- **Pre-Publication Validation**: Always validate tests execute successfully before publishing changes
+- **Bug Detection**: Create GitHub Issues for application errors detected during testing
+- Include comprehensive bug reports with logs, screenshots, and Playwright execution reports
 
-### 5. Code Review
+### 5. Documentation and Rules Synchronization
+
+⚠️ **CRITICAL REQUIREMENT FOR DOCUMENTATION CHANGES** ⚠️
+
+When making changes to AI assistant instructions or development rules:
+
+1. **Simultaneous Updates Required**:
+   - ALWAYS update both `.cursorrules` and `.github/copilot-instructions.md` simultaneously
+   - Ensure consistency between both files
+   - Maintain the same standards and processes in both documents
+
+2. **Documentation Chain Updates**:
+   - Update `BUILD_STANDARDS.md` to reflect any process changes
+   - Update `PLAYWRIGHT_STANDARDS.md` for test-related changes
+   - Update `README.md` if the changes affect the development workflow
+
+3. **Version Control Requirements**:
+   - Include all updated files in the same commit
+   - Reference the documentation changes in commit messages
+   - Use format: `[TT-XXX] Update development rules and documentation`
+
+4. **Validation Process**:
+   - Verify both AI assistants can follow the updated rules
+   - Test the workflows described in the documentation
+   - Ensure examples and code snippets are accurate and up-to-date
+
+### 6. Code Review
 
 - All PRs must be reviewed before being merged
 - Always include GitHub Copilot as a reviewer
 - Prioritize and address Copilot's suggestions
 - Ensure compliance with code standards
+- **For documentation changes**: Verify that both AI assistant rule files are updated and synchronized
 
-### 6. Integration and Deployment
+### 7. Integration and Deployment
 
 - Approved PRs are merged into `main`
 - Deployment to environments is done from `main`
 - Automated tests are run before deployment
+- **Documentation consistency**: Ensure all rule files remain synchronized across environments
 
 ## Appendices
 
@@ -97,4 +139,7 @@ For more details, consult:
 
 - [Playwright Test Standards](./PLAYWRIGHT_STANDARDS.md)
 - [GitHub Copilot Instructions](./.github/copilot-instructions.md)
+- [Cursor Rules](./.cursorrules)
 - [Project Backlog](./BACKLOG.md)
+
+**Note**: The GitHub Copilot Instructions and Cursor Rules files must always be kept in sync. Any changes to development processes, standards, or AI assistant behavior must be reflected in both files simultaneously.
