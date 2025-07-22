@@ -1,14 +1,6 @@
 # Build Standards for Wallet Sandbox
 
-This document defines the standards and processes for development, building, and d### 6. Code Review
-
-- All PRs must be reviewed before being merged
-- Always include GitHub Copilot as a reviewer
-- Prioritize and address Copilot's suggestions
-- Ensure compliance with code standards
-- **For documentation changes**: Verify that both AI assistant rule files are updated and synchronized
-
-### 7. Integration and Deploymentt of the Wallet Sandbox application.
+This document defines the standards and processes for development, building, and deployment of the Wallet Sandbox application.
 
 ## Technologies and Frameworks
 
@@ -132,6 +124,7 @@ When making changes to AI assistant instructions or development rules:
 - Always include GitHub Copilot as a reviewer
 - Prioritize and address Copilot's suggestions
 - Ensure compliance with code standards
+- **For documentation changes**: Verify that both AI assistant rule files are updated and synchronized
 
 ### 7. Integration and Deployment
 
