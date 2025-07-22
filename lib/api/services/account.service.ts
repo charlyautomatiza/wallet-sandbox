@@ -1,5 +1,6 @@
 import { apiClient } from "../client"
 import { mockAccount, mockCards } from "../mock-data"
+import { storage, STORAGE_KEYS } from "../../storage"
 import type { ApiResponse, Account, Card } from "../types"
 
 export class AccountService {
@@ -7,10 +8,13 @@ export class AccountService {
     try {
       await apiClient.get<Account>("/account")
 
+      const storedAccount = storage.getItem<Account | null>(STORAGE_KEYS.ACCOUNT, null)
+      const account = storedAccount || mockAccount
+
       return {
         success: true,
-        data: mockAccount,
-        message: "Account information retrieved successfully",
+        data: account,
+        message: "Account retrieved successfully",
       }
     } catch (error) {
       return {
@@ -20,42 +24,32 @@ export class AccountService {
     }
   }
 
-  static async getBalance(): Promise<ApiResponse<{ balance: number; currency: string }>> {
-    try {
-      await apiClient.get<{ balance: number; currency: string }>("/account/balance")
-
-      return {
-        success: true,
-        data: {
-          balance: mockAccount.balance,
-          currency: mockAccount.currency,
-        },
-        message: "Balance retrieved successfully",
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: "Failed to retrieve balance",
-      }
-    }
-  }
-
   static async updateBalance(newBalance: number): Promise<ApiResponse<Account>> {
     try {
-      await apiClient.put<Account>("/account/balance", { balance: newBalance })
+      await apiClient.put<Account>("/account/balance", { balance: newBalance }, 1500)
 
+      const currentAccount = storage.getItem<Account | null>(STORAGE_KEYS.ACCOUNT, null) || mockAccount
+      const updatedAccount: Account = {
+        ...currentAccount,
+        balance: newBalance,
+        updatedAt: new Date().toISOString(),
+      }
+
+      storage.setItem(STORAGE_KEYS.ACCOUNT, updatedAccount)
+
+      // Also update the mock account for consistency
       mockAccount.balance = newBalance
       mockAccount.updatedAt = new Date().toISOString()
 
       return {
         success: true,
-        data: mockAccount,
-        message: "Balance updated successfully",
+        data: updatedAccount,
+        message: "Account balance updated successfully",
       }
     } catch (error) {
       return {
         success: false,
-        error: "Failed to update balance",
+        error: "Failed to update account balance",
       }
     }
   }
@@ -64,9 +58,12 @@ export class AccountService {
     try {
       await apiClient.get<Card[]>("/account/cards")
 
+      const storedCards = storage.getItem<Card[]>(STORAGE_KEYS.CARDS, [])
+      const allCards = storedCards.length > 0 ? storedCards : mockCards
+
       return {
         success: true,
-        data: mockCards,
+        data: allCards,
         message: "Cards retrieved successfully",
       }
     } catch (error) {
@@ -79,22 +76,31 @@ export class AccountService {
 
   static async toggleCardStatus(cardId: string): Promise<ApiResponse<Card>> {
     try {
-      await apiClient.put<Card>(`/account/cards/${cardId}/toggle`)
+      await apiClient.put<Card>(`/account/cards/${cardId}/toggle`, {}, 1500)
 
-      const card = mockCards.find((c) => c.id === cardId)
-      if (!card) {
+      const storedCards = storage.getItem<Card[]>(STORAGE_KEYS.CARDS, [])
+      const allCards = storedCards.length > 0 ? storedCards : [...mockCards]
+
+      const cardIndex = allCards.findIndex((card) => card.id === cardId)
+
+      if (cardIndex === -1) {
         return {
           success: false,
           error: "Card not found",
         }
       }
 
-      card.isActive = !card.isActive
+      allCards[cardIndex] = {
+        ...allCards[cardIndex],
+        isBlocked: !allCards[cardIndex].isBlocked,
+      }
+
+      storage.setItem(STORAGE_KEYS.CARDS, allCards)
 
       return {
         success: true,
-        data: card,
-        message: `Card ${card.isActive ? "activated" : "blocked"} successfully`,
+        data: allCards[cardIndex],
+        message: `Card ${allCards[cardIndex].isBlocked ? "blocked" : "unblocked"} successfully`,
       }
     } catch (error) {
       return {
@@ -104,59 +110,89 @@ export class AccountService {
     }
   }
 
-  static async getStatement(startDate: string, endDate: string): Promise<ApiResponse<any[]>> {
+  static async updateAccountInfo(accountData: Partial<Account>): Promise<ApiResponse<Account>> {
     try {
-      await apiClient.get<any[]>(`/account/statement?start=${startDate}&end=${endDate}`)
+      await apiClient.put<Account>("/account", accountData, 2000)
 
-      const statement = [
-        {
-          date: "2024-01-15",
-          description: "Transferencia a María González",
-          amount: -15000,
-          balance: 125430.5,
-        },
-        {
-          date: "2024-01-14",
-          description: "Depósito en efectivo",
-          amount: 50000,
-          balance: 140430.5,
-        },
-        {
-          date: "2024-01-13",
-          description: "Pago de servicios - Luz",
-          amount: -8500,
-          balance: 90430.5,
-        },
-      ]
+      const currentAccount = storage.getItem<Account | null>(STORAGE_KEYS.ACCOUNT, null) || mockAccount
+      const updatedAccount: Account = {
+        ...currentAccount,
+        ...accountData,
+        updatedAt: new Date().toISOString(),
+      }
+
+      storage.setItem(STORAGE_KEYS.ACCOUNT, updatedAccount)
 
       return {
         success: true,
-        data: statement,
-        message: "Statement retrieved successfully",
+        data: updatedAccount,
+        message: "Account information updated successfully",
       }
     } catch (error) {
       return {
         success: false,
-        error: "Failed to retrieve statement",
+        error: "Failed to update account information",
       }
     }
   }
 
-  static async updateAccountSettings(settings: Partial<Account>): Promise<ApiResponse<Account>> {
-    try {
-      await apiClient.put<Account>("/account/settings", settings)
+  static getStoredAccount(): Account | null {
+    return storage.getItem<Account | null>(STORAGE_KEYS.ACCOUNT, null)
+  }
 
-      Object.assign(mockAccount, settings, { updatedAt: new Date().toISOString() })
+  static clearStoredData(): void {
+    storage.removeItem(STORAGE_KEYS.ACCOUNT)
+    storage.removeItem(STORAGE_KEYS.CARDS)
+  }
+
+  static async deactivateAccount(): Promise<ApiResponse<Account>> {
+    try {
+      await apiClient.put<Account>("/account/deactivate", {}, 2500)
+
+      const currentAccount = storage.getItem<Account | null>(STORAGE_KEYS.ACCOUNT, null) || mockAccount
+      const deactivatedAccount: Account = {
+        ...currentAccount,
+        isActive: false,
+        updatedAt: new Date().toISOString(),
+      }
+
+      storage.setItem(STORAGE_KEYS.ACCOUNT, deactivatedAccount)
 
       return {
         success: true,
-        data: mockAccount,
-        message: "Account settings updated successfully",
+        data: deactivatedAccount,
+        message: "Account deactivated successfully",
       }
     } catch (error) {
       return {
         success: false,
-        error: "Failed to update account settings",
+        error: "Failed to deactivate account",
+      }
+    }
+  }
+
+  static async reactivateAccount(): Promise<ApiResponse<Account>> {
+    try {
+      await apiClient.put<Account>("/account/reactivate", {}, 2500)
+
+      const currentAccount = storage.getItem<Account | null>(STORAGE_KEYS.ACCOUNT, null) || mockAccount
+      const reactivatedAccount: Account = {
+        ...currentAccount,
+        isActive: true,
+        updatedAt: new Date().toISOString(),
+      }
+
+      storage.setItem(STORAGE_KEYS.ACCOUNT, reactivatedAccount)
+
+      return {
+        success: true,
+        data: reactivatedAccount,
+        message: "Account reactivated successfully",
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: "Failed to reactivate account",
       }
     }
   }
