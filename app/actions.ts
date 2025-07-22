@@ -1,60 +1,94 @@
 "use server"
 
-import { TransferService } from "@/lib/api/services/transfer.service"
-import type { TransferRequest } from "@/lib/api/types"
+import { revalidatePath } from "next/cache"
+import { TransferService, RequestService } from "@/lib/api"
+import type { TransferRequest, MoneyRequestInput } from "@/lib/api/types"
 
 export async function handleTransfer(prevState: any, formData: FormData) {
   try {
-    const amount = Number(formData.get("amount"))
-    const contactId = formData.get("contactId") as string
-    const contactName = formData.get("contactName") as string
-    const reason = formData.get("reason") as string
-    const comment = formData.get("comment") as string
+    const transferData: TransferRequest = {
+      contactId: formData.get("contactId") as string,
+      contactName: formData.get("contactName") as string,
+      amount: Number(formData.get("amount")),
+      reason: (formData.get("reason") as string) || "Varios",
+      comment: (formData.get("comment") as string) || "",
+    }
 
     // Validate required fields
-    if (!amount || amount <= 0) {
+    if (!transferData.amount || transferData.amount <= 0) {
       return {
         success: false,
         error: "El monto debe ser mayor a 0",
       }
     }
 
-    if (!contactId || !contactName) {
+    if (!transferData.contactId || !transferData.contactName) {
       return {
         success: false,
         error: "Información del contacto requerida",
       }
     }
 
-    // Create transfer request
-    const transferRequest: TransferRequest = {
-      contactId,
-      contactName,
-      amount,
-      reason: reason || "Varios",
-      comment: comment || "",
-    }
-
-    // Process the transfer
-    const result = await TransferService.processTransfer(transferRequest)
+    // Use the API service instead of direct logic
+    const result = await TransferService.processTransfer(transferData)
 
     if (!result.success) {
       return {
         success: false,
-        error: result.error || "Error al procesar la transferencia",
+        error: result.error || "Failed to process transfer",
       }
     }
 
+    revalidatePath("/transfer")
     return {
       success: true,
       data: result.data,
-      message: result.message,
     }
   } catch (error) {
-    console.error("Transfer error:", error)
+    console.error("Transfer failed:", error)
     return {
       success: false,
-      error: "Error interno del servidor",
+      error: "Failed to process transfer. Please try again.",
+    }
+  }
+}
+
+export async function handleRequestMoney(prevState: any, formData: FormData) {
+  try {
+    const requestData: MoneyRequestInput = {
+      amount: Number(formData.get("amount")),
+      description: (formData.get("description") as string) || "",
+      contactId: (formData.get("contactId") as string) || undefined,
+    }
+
+    // Validate required fields
+    if (!requestData.amount || requestData.amount <= 0) {
+      return {
+        success: false,
+        error: "El monto debe ser mayor a 0",
+      }
+    }
+
+    // Use the API service instead of direct logic
+    const result = await RequestService.createMoneyRequest(requestData)
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Failed to process request",
+      }
+    }
+
+    revalidatePath("/request")
+    return {
+      success: true,
+      data: result.data,
+    }
+  } catch (error) {
+    console.error("Request failed:", error)
+    return {
+      success: false,
+      error: "Failed to process request",
     }
   }
 }

@@ -1,62 +1,85 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { TransferService } from "@/lib/api/services/transfer.service"
-import type { Transaction } from "@/lib/api/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpRight, ArrowDownLeft } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ArrowUpRight, ArrowDownLeft, RefreshCw } from "lucide-react"
+import { TransferService } from "@/lib/api/services/transfer.service"
+import type { Transaction } from "@/lib/api/types"
 
-export function TransferHistory() {
+interface TransferHistoryProps {
+  limit?: number
+  showTitle?: boolean
+}
+
+export function TransferHistory({ limit = 10, showTitle = true }: TransferHistoryProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadTransferHistory = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const result = await TransferService.getTransferHistory(limit)
+
+      if (result.success) {
+        setTransactions(result.data)
+      } else {
+        setError(result.error || "Error al cargar el historial")
+      }
+    } catch (err) {
+      setError("Error al cargar el historial de transferencias")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const loadTransferHistory = async () => {
-      try {
-        const result = await TransferService.getTransferHistory(20)
-        if (result.success && result.data) {
-          setTransactions(result.data)
-        }
-      } catch (error) {
-        console.error("Error loading transfer history:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     loadTransferHistory()
-  }, [])
+  }, [limit])
+
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      minimumFractionDigits: 0,
+    }).format(Math.abs(amount))
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString("es-AR", {
       day: "2-digit",
       month: "2-digit",
-      year: "numeric",
+      year: "2-digit",
     })
   }
 
-  const formatAmount = (amount: number) => {
-    const isNegative = amount < 0
-    const absoluteAmount = Math.abs(amount)
-    return {
-      formatted: `$${absoluteAmount.toLocaleString()}`,
-      isNegative,
-    }
-  }
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Historial de Transferencias</CardTitle>
-        </CardHeader>
+        {showTitle && (
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 animate-spin" />
+              Historial de Transferencias
+            </CardTitle>
+          </CardHeader>
+        )}
         <CardContent>
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-16 bg-gray-200 rounded-lg"></div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                  <div className="space-y-1">
+                    <div className="w-32 h-4 bg-gray-200 rounded" />
+                    <div className="w-20 h-3 bg-gray-200 rounded" />
+                  </div>
+                </div>
+                <div className="w-16 h-4 bg-gray-200 rounded" />
               </div>
             ))}
           </div>
@@ -65,50 +88,80 @@ export function TransferHistory() {
     )
   }
 
+  if (error) {
+    return (
+      <Card>
+        {showTitle && (
+          <CardHeader>
+            <CardTitle>Historial de Transferencias</CardTitle>
+          </CardHeader>
+        )}
+        <CardContent>
+          <div className="text-center py-6">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button onClick={loadTransferHistory} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reintentar
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Historial de Transferencias</CardTitle>
-      </CardHeader>
+      {showTitle && (
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Historial de Transferencias</CardTitle>
+          <Button onClick={loadTransferHistory} variant="ghost" size="sm">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+      )}
       <CardContent>
         {transactions.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No hay transferencias registradas</p>
+          <div className="text-center py-6 text-gray-500">
+            <p>No hay transferencias registradas</p>
+          </div>
         ) : (
           <div className="space-y-3">
-            {transactions.map((transaction) => {
-              const { formatted, isNegative } = formatAmount(transaction.amount)
-
-              return (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-full ${isNegative ? "bg-red-100" : "bg-green-100"}`}>
-                      {isNegative ? (
-                        <ArrowUpRight className="h-4 w-4 text-red-600" />
-                      ) : (
-                        <ArrowDownLeft className="h-4 w-4 text-green-600" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium">{transaction.description}</p>
-                      <p className="text-sm text-gray-500">{formatDate(transaction.date)}</p>
-                      {transaction.contactName && <p className="text-xs text-gray-400">{transaction.contactName}</p>}
-                    </div>
+            {transactions.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2 rounded-full ${
+                      transaction.amount > 0 ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                    }`}
+                  >
+                    {transaction.amount > 0 ? (
+                      <ArrowDownLeft className="h-4 w-4" />
+                    ) : (
+                      <ArrowUpRight className="h-4 w-4" />
+                    )}
                   </div>
-                  <div className="text-right">
-                    <p className={`font-semibold ${isNegative ? "text-red-600" : "text-green-600"}`}>
-                      {isNegative ? "-" : "+"}
-                      {formatted}
-                    </p>
-                    <Badge variant={transaction.status === "completed" ? "default" : "secondary"}>
-                      {transaction.status === "completed" ? "Completada" : "Pendiente"}
-                    </Badge>
+                  <div>
+                    <p className="font-medium text-sm">{transaction.contactName || transaction.description}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-gray-500">{formatDate(transaction.date)}</p>
+                      <Badge variant={transaction.status === "completed" ? "default" : "secondary"} className="text-xs">
+                        {transaction.status === "completed" ? "Completada" : "Pendiente"}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-              )
-            })}
+                <div className="text-right">
+                  <p className={`font-semibold ${transaction.amount > 0 ? "text-green-600" : "text-red-600"}`}>
+                    {transaction.amount > 0 ? "+" : "-"}
+                    {formatAmount(transaction.amount)}
+                  </p>
+                  <p className="text-xs text-gray-500">{transaction.category}</p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
