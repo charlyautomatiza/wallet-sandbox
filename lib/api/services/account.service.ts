@@ -118,7 +118,7 @@ export class AccountService {
       const statement = [
         {
           date: "2024-01-15",
-          description: "Transferencia a Elyer Saitest",
+          description: "Transferencia a María González",
           amount: -15000,
           balance: 125430.5,
         },

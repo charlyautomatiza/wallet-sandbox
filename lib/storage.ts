@@ -1,22 +1,22 @@
-// Storage utility for localStorage operations
+// Storage utility for localStorage operations with error handling
 export const STORAGE_KEYS = {
   TRANSFERS: "banking_transfers",
   CONTACTS: "banking_contacts",
   ACCOUNT: "banking_account",
-  SETTINGS: "banking_settings",
+  USER_PREFERENCES: "banking_preferences",
 } as const
 
 export const storage = {
-  // Get item from localStorage with type safety
-  getItem: <T>(key: string, defaultValue: T): T => {\
-    if (typeof window === 'undefined') return defaultValue
+  // Get item from localStorage with fallback
+  getItem: <T>(key: string, fallback: T): T => {\
+    if (typeof window === 'undefined') return fallback
     
     try {\
       const item = localStorage.getItem(key)
-      return item ? JSON.parse(item) : defaultValue
+      return item ? JSON.parse(item) : fallback
     } catch (error) {
       console.error(`Error reading from localStorage key "${key}":`, error)\
-      return defaultValue
+      return fallback
     }
   },
 
@@ -38,7 +38,7 @@ export const storage = {
     try {
       localStorage.removeItem(key)
     } catch (error) {
-      console.error(`Error removing from localStorage key "${key}":`, error)
+      console.error(`Error removing localStorage key "${key}":`, error)
     }
   },
 

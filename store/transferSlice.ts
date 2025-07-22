@@ -49,9 +49,8 @@ export const addContact = createAsyncThunk(
 // State interface
 interface TransferState {
   // Transfer form state
+  selectedContact: Contact | null
   amount: number
-  contactId: string | null
-  contactName: string | null
   reason: string
   comment: string
 
@@ -71,9 +70,8 @@ interface TransferState {
 
 // Initial state
 const initialState: TransferState = {
+  selectedContact: null,
   amount: 0,
-  contactId: null,
-  contactName: null,
   reason: "",
   comment: "",
   contacts: [],
@@ -91,13 +89,12 @@ const transferSlice = createSlice({
   initialState,
   reducers: {
     // Form actions
-    setAmount: (state, action: PayloadAction<number>) => {
-      state.amount = action.payload
+    setSelectedContact: (state, action: PayloadAction<Contact | null>) => {
+      state.selectedContact = action.payload
       state.error = null
     },
-    setContact: (state, action: PayloadAction<{ id: string; name: string }>) => {
-      state.contactId = action.payload.id
-      state.contactName = action.payload.name
+    setAmount: (state, action: PayloadAction<number>) => {
+      state.amount = action.payload
       state.error = null
     },
     setReason: (state, action: PayloadAction<string>) => {
@@ -118,9 +115,8 @@ const transferSlice = createSlice({
 
     // Reset actions
     resetTransfer: (state) => {
+      state.selectedContact = null
       state.amount = 0
-      state.contactId = null
-      state.contactName = null
       state.reason = ""
       state.comment = ""
       state.isLoading = false
@@ -160,8 +156,7 @@ const transferSlice = createSlice({
       })
       .addCase(fetchContact.fulfilled, (state, action) => {
         state.isLoading = false
-        state.contactId = action.payload.id
-        state.contactName = action.payload.name
+        state.selectedContact = action.payload
       })
       .addCase(fetchContact.rejected, (state, action) => {
         state.isLoading = false
@@ -192,9 +187,8 @@ const transferSlice = createSlice({
       .addCase(processTransfer.fulfilled, (state, action) => {
         state.isProcessing = false
         // Reset form after successful transfer
+        state.selectedContact = null
         state.amount = 0
-        state.contactId = null
-        state.contactName = null
         state.reason = ""
         state.comment = ""
         // Sync with localStorage to get updated history
@@ -225,8 +219,8 @@ const transferSlice = createSlice({
 
 // Export actions
 export const {
+  setSelectedContact,
   setAmount,
-  setContact,
   setReason,
   setComment,
   setShowOnlyUala,
@@ -242,8 +236,7 @@ export const transferReducer = transferSlice.reducer
 // Selectors
 export const selectTransferState = (state: { transfer: TransferState }) => state.transfer
 export const selectContacts = (state: { transfer: TransferState }) => state.transfer.contacts
-export const selectContactId = (state: { transfer: TransferState }) => state.transfer.contactId
-export const selectContactName = (state: { transfer: TransferState }) => state.transfer.contactName
+export const selectSelectedContact = (state: { transfer: TransferState }) => state.transfer.selectedContact
 export const selectTransferHistory = (state: { transfer: TransferState }) => state.transfer.transferHistory
 export const selectIsLoading = (state: { transfer: TransferState }) => state.transfer.isLoading
 export const selectIsProcessing = (state: { transfer: TransferState }) => state.transfer.isProcessing
@@ -271,3 +264,6 @@ export const selectFilteredContacts = (state: { transfer: TransferState }) => {
 
   return filtered
 }
+
+// Export default reducer
+export default transferSlice.reducer
