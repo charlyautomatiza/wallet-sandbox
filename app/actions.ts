@@ -1,129 +1,219 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
 import { TransferService } from "@/lib/api/services/transfer.service"
 import { RequestService } from "@/lib/api/services/request.service"
-import type { TransferRequest, MoneyRequestInput } from "@/lib/api/types"
+import { AccountService } from "@/lib/api/services/account.service"
+import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 
-export async function handleTransfer(prevState: any, formData: FormData) {
-  try {
-    const transferData: TransferRequest = {
-      contactId: formData.get("contactId") as string,
-      contactName: formData.get("contactName") as string,
-      amount: Number(formData.get("amount")),
-      reason: (formData.get("reason") as string) || "Varios",
-      comment: (formData.get("comment") as string) || "",
-    }
+// Transfer action
+export async function handleTransfer(formData: FormData) {
+  const contactId = formData.get("contactId") as string
+  const contactName = formData.get("contactName") as string
+  const amount = Number.parseFloat(formData.get("amount") as string)
+  const reason = formData.get("reason") as string
+  const comment = formData.get("comment") as string
 
-    // Validate required fields
-    if (!transferData.amount || transferData.amount <= 0) {
-      return {
-        success: false,
-        error: "El monto debe ser mayor a 0",
-      }
-    }
-
-    if (!transferData.contactId || !transferData.contactName) {
-      return {
-        success: false,
-        error: "Información del contacto requerida",
-      }
-    }
-
-    // Use the API service instead of direct logic
-    const result = await TransferService.processTransfer(transferData)
-
-    if (!result.success) {
-      return {
-        success: false,
-        error: result.error || "Failed to process transfer",
-      }
-    }
-
-    revalidatePath("/transfer")
-    return {
-      success: true,
-      data: result.data,
-    }
-  } catch (error) {
-    console.error("Transfer failed:", error)
+  // Validation
+  if (!contactId || !contactName || !amount || amount <= 0) {
     return {
       success: false,
-      error: "Failed to process transfer. Please try again.",
+      error: "Todos los campos son requeridos y el monto debe ser mayor a 0",
     }
   }
-}
 
-export async function handleRequestMoney(prevState: any, formData: FormData) {
-  try {
-    const requestData: MoneyRequestInput = {
-      amount: Number(formData.get("amount")),
-      description: (formData.get("description") as string) || "",
-      contactId: (formData.get("contactId") as string) || undefined,
-    }
-
-    // Validate required fields
-    if (!requestData.amount || requestData.amount <= 0) {
-      return {
-        success: false,
-        error: "El monto debe ser mayor a 0",
-      }
-    }
-
-    // Use the API service instead of direct logic
-    const result = await RequestService.createMoneyRequest(requestData)
-
-    if (!result.success) {
-      return {
-        success: false,
-        error: result.error || "Failed to process request",
-      }
-    }
-
-    revalidatePath("/request")
-    return {
-      success: true,
-      data: result.data,
-    }
-  } catch (error) {
-    console.error("Request failed:", error)
+  if (amount > 1000000) {
     return {
       success: false,
-      error: "Failed to process request",
+      error: "El monto máximo por transferencia es $1.000.000",
     }
   }
-}
 
-// Action to get transfer history
-export async function getTransferHistory(limit = 10) {
   try {
-    const result = await TransferService.getTransferHistory(limit)
+    const result = await TransferService.processTransfer({
+      contactId,
+      contactName,
+      amount,
+      reason,
+      comment,
+    })
+
+    if (result.success) {
+      revalidatePath("/")
+      revalidatePath("/transfer")
+      redirect(`/transfer/${contactId}/success?amount=${amount}&name=${encodeURIComponent(contactName)}`)
+    }
+
     return result
   } catch (error) {
-    console.error("Get transfer history error:", error)
     return {
       success: false,
-      error: "Error al obtener el historial de transferencias",
+      error: "Error interno del servidor. Intenta nuevamente.",
     }
   }
 }
 
-// Action to add a new contact
-export async function addContact(contactData: {
-  name: string
-  initials: string
-  hasUala: boolean
-  email?: string
-  phone?: string
-}) {
-  try {
-    const result = await TransferService.addContact(contactData)
-    return result
-  } catch (error) {
-    console.error("Add contact error:", error)
+// Request money action
+export async function handleRequestMoney(formData: FormData) {
+  const contactId = formData.get("contactId") as string
+  const amount = Number.parseFloat(formData.get("amount") as string)
+  const description = formData.get("description") as string
+
+  // Validation
+  if (!amount || amount <= 0) {
     return {
       success: false,
-      error: "Error al agregar el contacto",
+      error: "El monto debe ser mayor a 0",
+    }
+  }
+
+  if (!description || description.trim().length === 0) {
+    return {
+      success: false,
+      error: "La descripción es requerida",
+    }
+  }
+
+  if (amount > 500000) {
+    return {
+      success: false,
+      error: "El monto máximo por solicitud es $500.000",
+    }
+  }
+
+  try {
+    const result = await RequestService.createMoneyRequest({
+      contactId,
+      amount,
+      description: description.trim(),
+    })
+
+    if (result.success) {
+      revalidatePath("/request")
+      return {
+        success: true,
+        message: "Solicitud de dinero enviada exitosamente",
+        data: result.data,
+      }
+    }
+
+    return result
+  } catch (error) {
+    return {
+      success: false,
+      error: "Error interno del servidor. Intenta nuevamente.",
+    }
+  }
+}
+
+// Accept money request action
+export async function handleAcceptRequest(requestId: string) {
+  try {
+    const result = await RequestService.acceptMoneyRequest(requestId)
+
+    if (result.success) {
+      revalidatePath("/request")
+      return {
+        success: true,
+        message: "Solicitud aceptada exitosamente",
+      }
+    }
+
+    return result
+  } catch (error) {
+    return {
+      success: false,
+      error: "Error al aceptar la solicitud",
+    }
+  }
+}
+
+// Reject money request action
+export async function handleRejectRequest(requestId: string) {
+  try {
+    const result = await RequestService.rejectMoneyRequest(requestId)
+
+    if (result.success) {
+      revalidatePath("/request")
+      return {
+        success: true,
+        message: "Solicitud rechazada",
+      }
+    }
+
+    return result
+  } catch (error) {
+    return {
+      success: false,
+      error: "Error al rechazar la solicitud",
+    }
+  }
+}
+
+// Cancel money request action
+export async function handleCancelRequest(requestId: string) {
+  try {
+    const result = await RequestService.cancelMoneyRequest(requestId)
+
+    if (result.success) {
+      revalidatePath("/request")
+      return {
+        success: true,
+        message: "Solicitud cancelada exitosamente",
+      }
+    }
+
+    return result
+  } catch (error) {
+    return {
+      success: false,
+      error: "Error al cancelar la solicitud",
+    }
+  }
+}
+
+// Update account balance action
+export async function handleUpdateBalance(newBalance: number) {
+  try {
+    const result = await AccountService.updateBalance(newBalance)
+
+    if (result.success) {
+      revalidatePath("/")
+      return {
+        success: true,
+        message: "Saldo actualizado exitosamente",
+        data: result.data,
+      }
+    }
+
+    return result
+  } catch (error) {
+    return {
+      success: false,
+      error: "Error al actualizar el saldo",
+    }
+  }
+}
+
+// Toggle card status action
+export async function handleToggleCard(cardId: string) {
+  try {
+    const result = await AccountService.toggleCardStatus(cardId)
+
+    if (result.success) {
+      revalidatePath("/more")
+      return {
+        success: true,
+        message: result.message,
+        data: result.data,
+      }
+    }
+
+    return result
+  } catch (error) {
+    return {
+      success: false,
+      error: "Error al cambiar el estado de la tarjeta",
     }
   }
 }

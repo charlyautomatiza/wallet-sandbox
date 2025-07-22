@@ -35,30 +35,52 @@ export const fetchTransferHistory = createAsyncThunk("transfer/fetchTransferHist
   return response.data
 })
 
+export const addContact = createAsyncThunk(
+  "transfer/addContact",
+  async (contactData: Omit<Contact, "id" | "recentTransfers">) => {
+    const response = await TransferService.addContact(contactData)
+    if (!response.success) {
+      throw new Error(response.error)
+    }
+    return response.data
+  },
+)
+
 // State interface
 interface TransferState {
-  contacts: Contact[]
+  // Transfer form state
   selectedContact: Contact | null
   amount: number
   reason: string
   comment: string
+
+  // Data state
+  contacts: Contact[]
   transferHistory: Transaction[]
+
+  // UI state
   isLoading: boolean
+  isProcessing: boolean
   error: string | null
-  transferStep: "select-contact" | "enter-amount" | "confirm" | "success"
+
+  // Filter state
+  showOnlyUala: boolean
+  searchQuery: string
 }
 
 // Initial state
 const initialState: TransferState = {
-  contacts: [],
   selectedContact: null,
   amount: 0,
-  reason: "Varios",
+  reason: "",
   comment: "",
+  contacts: [],
   transferHistory: [],
   isLoading: false,
+  isProcessing: false,
   error: null,
-  transferStep: "select-contact",
+  showOnlyUala: false,
+  searchQuery: "",
 }
 
 // Slice
@@ -66,9 +88,9 @@ const transferSlice = createSlice({
   name: "transfer",
   initialState,
   reducers: {
-    setSelectedContact: (state, action: PayloadAction<Contact>) => {
+    // Form actions
+    setSelectedContact: (state, action: PayloadAction<Contact | null>) => {
       state.selectedContact = action.payload
-      state.transferStep = "enter-amount"
     },
     setAmount: (state, action: PayloadAction<number>) => {
       state.amount = action.payload
@@ -79,19 +101,31 @@ const transferSlice = createSlice({
     setComment: (state, action: PayloadAction<string>) => {
       state.comment = action.payload
     },
-    setTransferStep: (state, action: PayloadAction<TransferState["transferStep"]>) => {
-      state.transferStep = action.payload
+
+    // Filter actions
+    setShowOnlyUala: (state, action: PayloadAction<boolean>) => {
+      state.showOnlyUala = action.payload
     },
-    clearTransferData: (state) => {
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.searchQuery = action.payload
+    },
+
+    // Reset actions
+    resetTransferForm: (state) => {
       state.selectedContact = null
       state.amount = 0
-      state.reason = "Varios"
+      state.reason = ""
       state.comment = ""
-      state.transferStep = "select-contact"
       state.error = null
     },
     clearError: (state) => {
       state.error = null
+    },
+
+    // Local storage sync
+    syncWithLocalStorage: (state) => {
+      const combinedTransactions = TransferService.getCombinedTransactions()
+      state.transferHistory = combinedTransactions.filter((t) => t.type === "transfer")
     },
   },
   extraReducers: (builder) => {
@@ -125,21 +159,6 @@ const transferSlice = createSlice({
         state.error = action.error.message || "Failed to fetch contact"
       })
 
-    // Process transfer
-    builder
-      .addCase(processTransfer.pending, (state) => {
-        state.isLoading = true
-        state.error = null
-      })
-      .addCase(processTransfer.fulfilled, (state, action) => {
-        state.isLoading = false
-        state.transferStep = "success"
-      })
-      .addCase(processTransfer.rejected, (state, action) => {
-        state.isLoading = false
-        state.error = action.error.message || "Failed to process transfer"
-      })
-
     // Fetch transfer history
     builder
       .addCase(fetchTransferHistory.pending, (state) => {
@@ -154,15 +173,90 @@ const transferSlice = createSlice({
         state.isLoading = false
         state.error = action.error.message || "Failed to fetch transfer history"
       })
+
+    // Process transfer
+    builder
+      .addCase(processTransfer.pending, (state) => {
+        state.isProcessing = true
+        state.error = null
+      })
+      .addCase(processTransfer.fulfilled, (state, action) => {
+        state.isProcessing = false
+        // Reset form after successful transfer
+        state.selectedContact = null
+        state.amount = 0
+        state.reason = ""
+        state.comment = ""
+        // Sync with localStorage to get updated history
+        const combinedTransactions = TransferService.getCombinedTransactions()
+        state.transferHistory = combinedTransactions.filter((t) => t.type === "transfer")
+      })
+      .addCase(processTransfer.rejected, (state, action) => {
+        state.isProcessing = false
+        state.error = action.error.message || "Failed to process transfer"
+      })
+
+    // Add contact
+    builder
+      .addCase(addContact.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(addContact.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.contacts.push(action.payload)
+      })
+      .addCase(addContact.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.error.message || "Failed to add contact"
+      })
   },
 })
 
 // Export actions
-export const { setSelectedContact, setAmount, setReason, setComment, setTransferStep, clearTransferData, clearError } =
-  transferSlice.actions
+export const {
+  setSelectedContact,
+  setAmount,
+  setReason,
+  setComment,
+  setShowOnlyUala,
+  setSearchQuery,
+  resetTransferForm,
+  clearError,
+  syncWithLocalStorage,
+} = transferSlice.actions
 
 // Export reducer
 export const transferReducer = transferSlice.reducer
 
-// Export default
-export default transferSlice.reducer
+// Selectors
+export const selectTransferState = (state: { transfer: TransferState }) => state.transfer
+export const selectContacts = (state: { transfer: TransferState }) => state.transfer.contacts
+export const selectSelectedContact = (state: { transfer: TransferState }) => state.transfer.selectedContact
+export const selectTransferHistory = (state: { transfer: TransferState }) => state.transfer.transferHistory
+export const selectIsLoading = (state: { transfer: TransferState }) => state.transfer.isLoading
+export const selectIsProcessing = (state: { transfer: TransferState }) => state.transfer.isProcessing
+export const selectError = (state: { transfer: TransferState }) => state.transfer.error
+
+// Filtered selectors
+export const selectFilteredContacts = (state: { transfer: TransferState }) => {
+  const { contacts, showOnlyUala, searchQuery } = state.transfer
+
+  let filtered = contacts
+
+  if (showOnlyUala) {
+    filtered = filtered.filter((contact) => contact.hasUala)
+  }
+
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase()
+    filtered = filtered.filter(
+      (contact) =>
+        contact.name.toLowerCase().includes(query) ||
+        contact.phone.toLowerCase().includes(query) ||
+        contact.email?.toLowerCase().includes(query),
+    )
+  }
+
+  return filtered
+}

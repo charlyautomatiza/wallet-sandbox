@@ -8,11 +8,10 @@ export class AccountService {
     try {
       const response = await apiClient.get<Account>("/account")
 
-      // Return mock data for now
       return {
         success: true,
         data: mockAccount,
-        message: "Account retrieved successfully",
+        message: "Account information retrieved successfully",
       }
     } catch (error) {
       return {
@@ -22,7 +21,49 @@ export class AccountService {
     }
   }
 
-  // Get user cards
+  // Get account balance
+  static async getBalance(): Promise<ApiResponse<{ balance: number; currency: string }>> {
+    try {
+      const response = await apiClient.get<{ balance: number; currency: string }>("/account/balance")
+
+      return {
+        success: true,
+        data: {
+          balance: mockAccount.balance,
+          currency: mockAccount.currency,
+        },
+        message: "Balance retrieved successfully",
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: "Failed to retrieve balance",
+      }
+    }
+  }
+
+  // Update account balance
+  static async updateBalance(newBalance: number): Promise<ApiResponse<Account>> {
+    try {
+      const response = await apiClient.put<Account>("/account/balance", { balance: newBalance })
+
+      mockAccount.balance = newBalance
+      mockAccount.updatedAt = new Date().toISOString()
+
+      return {
+        success: true,
+        data: mockAccount,
+        message: "Balance updated successfully",
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: "Failed to update balance",
+      }
+    }
+  }
+
+  // Get cards
   static async getCards(): Promise<ApiResponse<Card[]>> {
     try {
       const response = await apiClient.get<Card[]>("/account/cards")
@@ -40,68 +81,91 @@ export class AccountService {
     }
   }
 
-  // Update account balance
-  static async updateBalance(newBalance: number): Promise<ApiResponse<Account>> {
-    try {
-      const response = await apiClient.put<Account>("/account/balance", { balance: newBalance })
-
-      // Update mock data
-      mockAccount.balance = newBalance
-
-      return {
-        success: true,
-        data: mockAccount,
-        message: "Balance updated successfully",
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: "Failed to update balance",
-      }
-    }
-  }
-
-  // Change currency
-  static async changeCurrency(currency: "ARS" | "USD"): Promise<ApiResponse<Account>> {
-    try {
-      const response = await apiClient.put<Account>("/account/currency", { currency })
-
-      // Update mock data
-      mockAccount.currency = currency
-
-      return {
-        success: true,
-        data: mockAccount,
-        message: "Currency updated successfully",
-      }
-    } catch (error) {
-      return {
-        success: false,
-        error: "Failed to update currency",
-      }
-    }
-  }
-
   // Block/Unblock card
-  static async toggleCardStatus(cardId: string, isActive: boolean): Promise<ApiResponse<Card>> {
+  static async toggleCardStatus(cardId: string): Promise<ApiResponse<Card>> {
     try {
-      const response = await apiClient.put<Card>(`/account/cards/${cardId}/status`, { isActive })
+      const response = await apiClient.put<Card>(`/account/cards/${cardId}/toggle`)
 
-      // Update mock data
       const card = mockCards.find((c) => c.id === cardId)
-      if (card) {
-        card.isActive = isActive
+      if (!card) {
+        return {
+          success: false,
+          error: "Card not found",
+        }
       }
+
+      card.isActive = !card.isActive
 
       return {
         success: true,
-        data: card!,
-        message: `Card ${isActive ? "activated" : "blocked"} successfully`,
+        data: card,
+        message: `Card ${card.isActive ? "activated" : "blocked"} successfully`,
       }
     } catch (error) {
       return {
         success: false,
-        error: "Failed to update card status",
+        error: "Failed to toggle card status",
+      }
+    }
+  }
+
+  // Get account statement
+  static async getStatement(startDate: string, endDate: string): Promise<ApiResponse<any[]>> {
+    try {
+      const response = await apiClient.get<any[]>(`/account/statement?start=${startDate}&end=${endDate}`)
+
+      // Mock statement data
+      const statement = [
+        {
+          date: "2024-01-15",
+          description: "Transferencia a Elyer Saitest",
+          amount: -15000,
+          balance: 125430.5,
+        },
+        {
+          date: "2024-01-14",
+          description: "Depósito en efectivo",
+          amount: 50000,
+          balance: 140430.5,
+        },
+        {
+          date: "2024-01-13",
+          description: "Pago de servicios - Luz",
+          amount: -8500,
+          balance: 90430.5,
+        },
+      ]
+
+      return {
+        success: true,
+        data: statement,
+        message: "Statement retrieved successfully",
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: "Failed to retrieve statement",
+      }
+    }
+  }
+
+  // Update account settings
+  static async updateAccountSettings(settings: Partial<Account>): Promise<ApiResponse<Account>> {
+    try {
+      const response = await apiClient.put<Account>("/account/settings", settings)
+
+      // Update mock account with new settings
+      Object.assign(mockAccount, settings, { updatedAt: new Date().toISOString() })
+
+      return {
+        success: true,
+        data: mockAccount,
+        message: "Account settings updated successfully",
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: "Failed to update account settings",
       }
     }
   }
