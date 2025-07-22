@@ -47,31 +47,31 @@ ALWAYS complete this step FIRST before discussing any technical details or sugge
    AFTER verifying the task ID and BEFORE any code changes:
    
    - CONFIRM with the user that they have executed:
-   ```bash
+   \`\`\`bash
    git checkout main
    git pull origin main
-   ```
+   \`\`\`
    - If not confirmed, DO NOT PROCEED until this step is completed.
    
    - CONFIRM the branch name follows the format: `type/US-XXX-short-description`
    - Valid types: feature, bugfix, hotfix, refactor, chore
-   ```bash
+   \`\`\`bash
    git checkout -b feature/US-XXX-short-description
-   ```
+   \`\`\`
    - VERIFY the current branch matches this pattern before proceeding
    - If branch doesn't exist or doesn't follow the pattern, STOP and require its creation
    
    - Only after confirming the steps above, proceed with implementing changes
    
    - Use convention for commit messages
-   ```bash
+   \`\`\`bash
    git commit -m "[US-XXX] Concise description of the change"
-   ```
+   \`\`\`
    
    - Request confirmation before publishing changes
-   ```bash
+   \`\`\`bash
    git push origin feature/US-XXX-short-description
-   ```
+   \`\`\`
    
    - Create PR and include GitHub Copilot as reviewer
    - Prioritize and address Copilot suggestions
@@ -80,7 +80,7 @@ ALWAYS complete this step FIRST before discussing any technical details or sugge
 
 ### File Structure
 
-```
+\`\`\`
 app/
 ├── (auth)/login/page.tsx  # Route groups
 ├── transfer/[id]/page.tsx # Dynamic routes
@@ -95,22 +95,22 @@ components/
 store/
 ├── store.ts              # Redux configuration
 └── slices/               # Slices by functionality
-```
+\`\`\`
 
 ### Next.js 15 App Router Patterns
 
 1. **Dynamic Routes**:
-```typescript
+\`\`\`typescript
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   // ALWAYS await params
   const { id } = await params
   
   // Implementation
 }
-```
+\`\`\`
 
 2. **Server Actions**:
-```typescript
+\`\`\`typescript
 'use server'
 
 import { revalidatePath } from 'next/cache'
@@ -124,10 +124,10 @@ export async function serverAction(prevState: any, formData: FormData) {
     return { success: false, error: 'User-friendly error message' }
   }
 }
-```
+\`\`\`
 
 3. **Client Components**:
-```typescript
+\`\`\`typescript
 'use client'
 
 import { useActionState } from 'react'
@@ -137,11 +137,11 @@ export function ClientComponent() {
   
   // Implementation
 }
-```
+\`\`\`
 
 ### Component Structure
 
-```typescript
+\`\`\`typescript
 'use client' // Only when necessary
 
 interface Props {
@@ -162,11 +162,11 @@ export function Component({ title, amount }: Props) {
   // 4. Rendering
   return <div>{title}</div>
 }
-```
+\`\`\`
 
 ### Redux Toolkit Pattern
 
-```typescript
+\`\`\`typescript
 // Slice
 export const slice = createSlice({
   name: 'feature',
@@ -180,7 +180,7 @@ export const slice = createSlice({
 export const store = configureStore({
   reducer: { feature: slice.reducer }
 })
-```
+\`\`\`
 
 ## Playwright Test Standards
 
@@ -212,27 +212,27 @@ export const store = configureStore({
 ### Locator Preferences
 
 1. Use role-based locators whenever possible:
-```typescript
+\`\`\`typescript
 await page.getByRole('button', { name: 'Submit' }).click();
 await page.getByRole('textbox', { name: 'Email' }).fill('user@example.com');
-```
+\`\`\`
 
 2. Use test IDs when role-based locators are insufficient:
-```typescript
+\`\`\`typescript
 await page.getByTestId('submit-button').click();
-```
+\`\`\`
 
 3. Use text content as a last resort:
-```typescript
+\`\`\`typescript
 await page.getByText('Welcome').isVisible();
-```
+\`\`\`
 
 4. Avoid CSS selectors and XPath when possible
 
 ### Page Object Implementation
 
 Generate page objects following this pattern:
-```typescript
+\`\`\`typescript
 import { Page } from '@playwright/test';
 
 export class LoginPage {
@@ -256,7 +256,7 @@ export class LoginPage {
     await this.loginButton.click();
   }
 }
-```
+\`\`\`
 
 ### Assertion Preferences
 
@@ -264,19 +264,19 @@ export class LoginPage {
 - Prefer auto-waiting assertions over manual waits
 - Check visibility before interacting with elements
 
-```typescript
+\`\`\`typescript
 // Preferred
 await expect(page.getByText('Success')).toBeVisible();
 
 // Avoid
 await page.waitForTimeout(1000);
-```
+\`\`\`
 
 ### API Mocking
 
 Use Playwright's route handling to mock API responses:
 
-```typescript
+\`\`\`typescript
 // Mock API responses
 await page.route('**/api/endpoint', (route) => {
   route.fulfill({
@@ -285,7 +285,7 @@ await page.route('**/api/endpoint', (route) => {
     body: JSON.stringify({ key: 'value' })
   });
 });
-```
+\`\`\`
 
 Create test cases that use mocked API responses:
 - Mock success responses for happy path tests

@@ -15,18 +15,18 @@ Before implementing any automation test:
 
 2. **Git Workflow**:
    - ALWAYS start from an updated main branch
-   ```bash
+   \`\`\`bash
    git checkout main
    git pull origin main
-   ```
+   \`\`\`
    - Create branch with descriptive name for tests
-   ```bash
+   \`\`\`bash
    git checkout -b test/US-XXX-test-description
-   ```
+   \`\`\`
    - Make commits with descriptive messages
-   ```bash
+   \`\`\`bash
    git commit -m "[Test][US-XXX] Add transfer tests"
-   ```
+   \`\`\`
    - Request confirmation before publishing
    - Add GitHub Copilot as reviewer in PRs
 
@@ -52,7 +52,7 @@ Before implementing any automation test:
 ## Project-Specific Test Structure
 
 Tests should be organized in the following structure:
-```
+\`\`\`
 tests/
 ├── fixtures/           # Common test fixtures
 ├── pages/              # Page Object Models
@@ -67,7 +67,7 @@ tests/
     ├── transfer/       # Money transfer tests
     ├── payments/       # Payment flow tests
     └── ...
-```
+\`\`\`
 
 ## Application-Specific Locators
 
@@ -76,7 +76,7 @@ For this application, follow these guidelines:
 2. Use data-testid attributes for complex UI elements
 3. For wallet-specific components, use the following patterns:
 
-```typescript
+\`\`\`typescript
 // Currency input fields
 const amountInput = page.getByRole('textbox', { name: /amount/i });
 
@@ -87,7 +87,7 @@ const requestButton = page.getByRole('button', { name: /request/i });
 // Navigation
 const paymentTab = page.getByRole('tab', { name: /payments/i });
 const transferTab = page.getByRole('tab', { name: /transfer/i });
-```
+\`\`\`
 
 ## Test Scenarios
 
@@ -111,7 +111,7 @@ Given the mobile-first nature of this application:
 
 Use the following pattern for authentication in tests - each test should set up its own authentication:
 
-```typescript
+\`\`\`typescript
 // Self-contained authentication within each test
 test('authenticated user can view balance', async ({ page }) => {
   // Arrange - Set up authentication in THIS test
@@ -124,13 +124,13 @@ test('authenticated user can view balance', async ({ page }) => {
   // Act/Assert - Test the actual functionality
   await expect(page.getByText(/balance/i)).toBeVisible();
 });
-```
+\`\`\`
 
 ## Data-Driven Testing Example
 
 Use data-driven patterns for testing similar flows with different inputs:
 
-```typescript
+\`\`\`typescript
 // Test data
 const transferScenarios = [
   { 
@@ -205,7 +205,7 @@ for (const scenario of transferScenarios) {
     }
   });
 }
-```
+\`\`\`
 
 ## Visual Testing
 

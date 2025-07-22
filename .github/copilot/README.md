@@ -26,7 +26,7 @@ This directory contains a set of instruction files that define the standards and
 
 To set up Playwright in this project:
 
-```bash
+\`\`\`bash
 # Install Playwright
 npm init playwright@latest
 
@@ -37,7 +37,7 @@ npx playwright test
 
 # Show report
 npx playwright show-report
-```
+\`\`\`
 
 ## Integration with GitHub Actions
 

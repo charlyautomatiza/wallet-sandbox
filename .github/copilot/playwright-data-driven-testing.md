@@ -15,7 +15,7 @@ Data-driven testing allows you to run the same test with different inputs, makin
 
 ### Using Dynamic Data Generation with Faker
 
-```typescript
+\`\`\`typescript
 import { test, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 
@@ -53,11 +53,11 @@ test.describe('User login with different roles', () => {
     });
   }
 });
-```
+\`\`\`
 
 ### Loading Test Data from JSON Files
 
-```typescript
+\`\`\`typescript
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -86,11 +86,11 @@ test.describe('User authentication flows', () => {
     });
   }
 });
-```
+\`\`\`
 
 ### Combining Faker with JSON Templates
 
-```typescript
+\`\`\`typescript
 import { test, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import * as fs from 'fs';
@@ -119,11 +119,11 @@ test.describe('User profile management', () => {
     });
   }
 });
-```
+\`\`\`
 
 ### Using Generated Product Data with Faker
 
-```typescript
+\`\`\`typescript
 // product-listing.spec.ts
 import { test, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
@@ -173,7 +173,7 @@ test.describe('Product pricing displays correctly', () => {
     });
   }
 });
-```
+\`\`\`
 
 ## Best Practices
 
@@ -182,7 +182,7 @@ test.describe('Product pricing displays correctly', () => {
    - Never hardcode test data directly in test specs
    - Example: `faker.internet.userName()` instead of `'user1'`
    
-   ```typescript
+   \`\`\`typescript
    // ❌ BAD: Hardcoded test data in the spec
    const users = [
      { username: 'user1', password: 'pass1', role: 'admin' },
@@ -198,20 +198,20 @@ test.describe('Product pricing displays correctly', () => {
    
    // ✅ ALSO GOOD: Data from JSON file
    const users = JSON.parse(fs.readFileSync('./data/users.json', 'utf-8'));
-   ```
+   \`\`\`
 
 2. **Descriptive Test Names**
    - Include data variations in test names for clear reports
    - NEVER use numeric prefixes in test names
    - Example: `test('Login as ${userData.role}', async ({ page }) => {...}`
    
-   ```typescript
+   \`\`\`typescript
    // ❌ BAD: Using numeric prefixes
    test(`TC${index}: Transfer ${amount} to ${recipient}`, async ({ page }) => {...});
    
    // ✅ GOOD: Descriptive without ordering
    test(`Transfer ${amount} to ${recipient} should succeed`, async ({ page }) => {...});
-   ```
+   \`\`\`
 
 3. **Organize Test Data**
    - Store test data templates in a dedicated `/data` folder
@@ -236,7 +236,7 @@ test.describe('Product pricing displays correctly', () => {
 
 ## Sample Data Folder Structure
 
-```
+\`\`\`
 project-root/
 ├── tests/
 │   └── example.spec.ts
@@ -249,7 +249,7 @@ project-root/
 │       ├── payment-scenarios.json
 │       └── transfer-scenarios.json
 └── ...
-```
+\`\`\`
 
 ## When to Use Data-Driven Testing
 
@@ -266,7 +266,7 @@ project-root/
 
 ## Example Data/Faker Setup
 
-```typescript
+\`\`\`typescript
 // File: test-setup/data-helpers.ts
 import { faker } from '@faker-js/faker';
 import * as fs from 'fs';
@@ -318,4 +318,4 @@ export const generateTransaction = (options = {}) => {
     ...options
   };
 };
-```
+\`\`\`

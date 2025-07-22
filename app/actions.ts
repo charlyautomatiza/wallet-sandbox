@@ -1,40 +1,33 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { TransferService, RequestService } from "@/lib/api"
+import type { TransferRequest, MoneyRequestInput } from "@/lib/api/types"
 
 export async function handleTransfer(prevState: any, formData: FormData) {
   try {
-    const amount = formData.get("amount")
-    const reason = formData.get("reason") || "Varios"
-    const comment = formData.get("comment") || ""
-    const contactId = formData.get("contactId")
-    const contactName = formData.get("contactName")
+    const transferData: TransferRequest = {
+      contactId: formData.get("contactId") as string,
+      contactName: formData.get("contactName") as string,
+      amount: Number(formData.get("amount")),
+      reason: (formData.get("reason") as string) || "Varios",
+      comment: (formData.get("comment") as string) || "",
+    }
 
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // Use the API service instead of direct logic
+    const result = await TransferService.processTransfer(transferData)
 
-    // Simulate successful transfer
-    console.log("Transfer processed:", {
-      amount,
-      reason,
-      comment,
-      contactId,
-      contactName,
-      timestamp: new Date().toISOString(),
-    })
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Failed to process transfer",
+      }
+    }
 
     revalidatePath("/transfer")
     return {
       success: true,
-      data: {
-        amount: Number(amount),
-        reason,
-        comment,
-        contactId,
-        contactName,
-        date: new Date().toLocaleDateString(),
-        timestamp: new Date().toISOString(),
-      },
+      data: result.data,
     }
   } catch (error) {
     console.error("Transfer failed:", error)
@@ -47,22 +40,32 @@ export async function handleTransfer(prevState: any, formData: FormData) {
 
 export async function handleRequestMoney(prevState: any, formData: FormData) {
   try {
-    const amount = formData.get("amount")
-    const description = formData.get("description")
+    const requestData: MoneyRequestInput = {
+      amount: Number(formData.get("amount")),
+      description: (formData.get("description") as string) || "",
+      contactId: (formData.get("contactId") as string) || undefined,
+    }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    // Use the API service instead of direct logic
+    const result = await RequestService.createMoneyRequest(requestData)
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || "Failed to process request",
+      }
+    }
 
     revalidatePath("/request")
     return {
       success: true,
-      data: {
-        amount,
-        description,
-        date: new Date().toLocaleDateString(),
-      },
+      data: result.data,
     }
   } catch (error) {
-    return { error: "Failed to process request" }
+    console.error("Request failed:", error)
+    return {
+      success: false,
+      error: "Failed to process request",
+    }
   }
 }

@@ -23,7 +23,7 @@ Each test must be completely independent and self-contained:
 - Do NOT use numeric prefixes (like "TC1:", "Test 1:", etc.) in test titles
 - Test titles should stand on their own without implying execution order
 
-```typescript
+\`\`\`typescript
 // ❌ BAD: Using numeric prefixes
 test('TC1: User can login with valid credentials', async ({ page }) => { /* ... */ });
 test('TC2: User cannot login with invalid credentials', async ({ page }) => { /* ... */ });
@@ -31,11 +31,11 @@ test('TC2: User cannot login with invalid credentials', async ({ page }) => { /*
 // ✅ GOOD: Descriptive titles without ordering
 test('User can login with valid credentials', async ({ page }) => { /* ... */ });
 test('User cannot login with invalid credentials', async ({ page }) => { /* ... */ });
-```
+\`\`\`
 
 ### Example of Independent Test
 
-```typescript
+\`\`\`typescript
 // ✅ GOOD: Each test is fully self-contained
 test('user can edit their profile', async ({ page }) => {
   // Setup - Create the user and login
@@ -90,9 +90,9 @@ test('user can edit their profile - BAD EXAMPLE', async ({ page }) => {
   // Assert - Verify changes
   await expect(page.getByText('Profile updated')).toBeVisible();
 });
-```
+\`\`\`
 
-```typescript
+\`\`\`typescript
 test('user can add item to cart', async ({ page }) => {
   // Arrange
   const productPage = new ProductPage(page);
@@ -105,13 +105,13 @@ test('user can add item to cart', async ({ page }) => {
   expect(await productPage.isItemAddedToCart()).toBeTruthy();
   expect(await productPage.getCartCount()).toBe('1');
 });
-```
+\`\`\`
 
 ## Assertions
 
 Use Playwright's built-in assertions from `expect` library:
 
-```typescript
+\`\`\`typescript
 import { test, expect } from '@playwright/test';
 
 // Basic assertions
@@ -124,26 +124,26 @@ expect(value).toContain(expected);
 // Asynchronous assertions
 expect(await page.getByText('Welcome')).toBeVisible();
 expect(await page.locator('#error')).toBeHidden();
-```
+\`\`\`
 
 ## Soft Assertions
 
 For tests that should continue after a failure, use soft assertions:
 
-```typescript
+\`\`\`typescript
 test('validate multiple elements on page', async ({ page }) => {
   // This will continue even if one assertion fails
   await expect.soft(page.getByText('Header')).toBeVisible();
   await expect.soft(page.getByRole('button')).toBeEnabled();
   await expect.soft(page.getByText('Footer')).toBeVisible();
 });
-```
+\`\`\`
 
 ## Custom Assertions
 
 Create custom assertions for complex validations:
 
-```typescript
+\`\`\`typescript
 async function expectModalToContainText(page, text) {
   const modal = page.getByRole('dialog');
   await expect(modal).toBeVisible();
@@ -154,13 +154,13 @@ test('show confirmation modal', async ({ page }) => {
   await page.getByRole('button', { name: 'Delete' }).click();
   await expectModalToContainText(page, 'Are you sure?');
 });
-```
+\`\`\`
 
 ## Waiting for Conditions
 
 Prefer auto-waiting built into Playwright over explicit waits:
 
-```typescript
+\`\`\`typescript
 // Good - Playwright auto-waits
 await page.getByRole('button').click();
 await expect(page.getByText('Success')).toBeVisible();
@@ -169,16 +169,16 @@ await expect(page.getByText('Success')).toBeVisible();
 await page.getByRole('button').click();
 await page.waitForTimeout(1000); // Bad practice
 await expect(page.getByText('Success')).toBeVisible();
-```
+\`\`\`
 
 ## Timeout Configuration
 
 Adjust timeouts for specific assertions when needed:
 
-```typescript
+\`\`\`typescript
 // Longer timeout for slow operations
 await expect(page.getByText('Processing')).toBeHidden({ timeout: 30000 });
 
 // For performance tests, use stricter timeouts
 await expect(page.getByText('Results')).toBeVisible({ timeout: 1000 });
-```
+\`\`\`

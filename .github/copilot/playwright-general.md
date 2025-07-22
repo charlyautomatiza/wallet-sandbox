@@ -32,18 +32,18 @@
 - Focus on the behavior or requirement being tested
 
 Examples:
-```typescript
+\`\`\`typescript
 // ❌ BAD: Using numeric prefixes
 test('TC1: User registration with valid data', async ({ page }) => { /* ... */ });
 
 // ✅ GOOD: Descriptive titles
 test('User can register with valid data', async ({ page }) => { /* ... */ });
 test('System displays error for duplicate email during registration', async ({ page }) => { /* ... */ });
-```
+\`\`\`
 
 ## Project Structure
 
-```
+\`\`\`
 ├── tests/
 │   ├── fixtures/     # Common test fixtures and helpers
 │   ├── pages/        # Page Object Models
@@ -53,7 +53,7 @@ test('System displays error for duplicate email during registration', async ({ p
 │       ├── auth/     # Authentication tests
 │       ├── payment/  # Payment flow tests
 │       └── ...
-```
+\`\`\`
 
 ## Test File Naming
 

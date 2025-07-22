@@ -6,7 +6,7 @@ The Model Context Protocol (MCP) is a framework designed to enhance test automat
 
 Set up Playwright MCP in your project:
 
-```typescript
+\`\`\`typescript
 // playwright.config.ts
 import { defineConfig } from '@playwright/test';
 
@@ -16,7 +16,7 @@ export default defineConfig({
     // Add any Playwright-specific configurations here
   }
 });
-```
+\`\`\`
 
 ## MCP Modes
 
@@ -32,7 +32,7 @@ export default defineConfig({
 
 MCP enables writing tests in natural language:
 
-```typescript
+\`\`\`typescript
 // Example of MCP-friendly test structure
 test('User completes checkout process', async ({ page }) => {
   // High-level steps using natural language descriptions
@@ -62,13 +62,13 @@ test('User completes checkout process', async ({ page }) => {
   await expect(page.getByText('Thank you for your order')).toBeVisible();
   await expect(page.getByText('Order #')).toBeVisible();
 });
-```
+\`\`\`
 
 ## Self-Healing Tests
 
 Structure tests to be resilient to UI changes:
 
-```typescript
+\`\`\`typescript
 // Example of a self-healing approach
 test('User searches for product', async ({ page }) => {
   await page.goto('https://example.com');
@@ -86,13 +86,13 @@ test('User searches for product', async ({ page }) => {
   // Verify results with flexible text matching
   await expect(page.getByText(/results for.*wireless headphones/i)).toBeVisible();
 });
-```
+\`\`\`
 
 ## Dynamic Test Adaptation
 
 Create tests that adapt to different contexts:
 
-```typescript
+\`\`\`typescript
 test('User adds item to cart on different viewports', async ({ page }) => {
   // Function to test add-to-cart on different viewports
   async function testAddToCart(viewport) {
@@ -118,13 +118,13 @@ test('User adds item to cart on different viewports', async ({ page }) => {
   // Test on desktop viewport
   await testAddToCart({ width: 1280, height: 800 });
 });
-```
+\`\`\`
 
 ## Edge Case Handling
 
 Include tests for edge cases and error scenarios:
 
-```typescript
+\`\`\`typescript
 test('Handle network errors gracefully', async ({ page }) => {
   // Set up network error simulation
   await page.route('**/api/products', route => route.abort('failed'));
@@ -148,4 +148,4 @@ test('Handle network errors gracefully', async ({ page }) => {
   await page.getByRole('button', { name: 'Retry' }).click();
   await expect(page.getByText('Product 1')).toBeVisible();
 });
-```
+\`\`\`

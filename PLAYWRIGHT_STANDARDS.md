@@ -4,7 +4,7 @@ This project includes a comprehensive set of instruction files that define stand
 
 ## Directory Structure
 
-```
+\`\`\`
 wallet-sandbox/
 ├── .github/
 │   └── copilot/                   # GitHub Copilot instruction files
@@ -21,7 +21,7 @@ wallet-sandbox/
 │   └── rules/                     # Cursor AI-specific rules
 │       └── playwright-tests.md    # Project-specific test standards
 ├── .cursorrules                   # General rules for Cursor AI
-```
+\`\`\`
 
 ## Using These Standards
 
@@ -44,7 +44,7 @@ wallet-sandbox/
 
 To set up Playwright in this project:
 
-```bash
+\`\`\`bash
 # Install Playwright
 npm install -D @playwright/test
 
@@ -58,7 +58,7 @@ npx playwright test
 
 # Show report
 npx playwright show-report
-```
+\`\`\`
 
 ### CI Integration
 
@@ -90,25 +90,25 @@ The Playwright tests are configured to run in CI environments. Key features:
    - NEVER use numeric prefixes in test titles (e.g., "TC1:", "Test 2:")
 
 5. **Use Role-Based Locators**
-   ```typescript
+   \`\`\`typescript
    // Good
    await page.getByRole('button', { name: 'Submit' }).click();
    
    // Avoid
    await page.locator('#submit-button').click();
-   ```
+   \`\`\`
 
 6. **Follow Page Object Model**
-   ```typescript
+   \`\`\`typescript
    // Create page objects
    const loginPage = new LoginPage(page);
    
    // Use their methods
    await loginPage.login('user@example.com', 'password');
-   ```
+   \`\`\`
    
 7. **Mock API Responses**
-   ```typescript
+   \`\`\`typescript
    // Mock API responses for comprehensive test coverage
    await page.route('**/api/account/balance', (route) => {
      route.fulfill({
@@ -117,20 +117,20 @@ The Playwright tests are configured to run in CI environments. Key features:
        body: JSON.stringify({ balance: 5000 })
      });
    });
-   ```
+   \`\`\`
 
 8. **Use Proper Assertions**
-   ```typescript
+   \`\`\`typescript
    // Good - Uses auto-waiting
    await expect(page.getByText('Success')).toBeVisible();
    
    // Avoid
    await page.waitForTimeout(1000);
    expect(await page.getByText('Success').isVisible()).toBeTruthy();
-   ```
+   \`\`\`
 
 9. **Structure Tests with AAA Pattern**
-   ```typescript
+   \`\`\`typescript
    test('user can add item to cart', async ({ page }) => {
      // Arrange
      await page.goto('/products');
@@ -141,7 +141,7 @@ The Playwright tests are configured to run in CI environments. Key features:
      // Assert
      await expect(page.getByText('Item added')).toBeVisible();
    });
-   ```
+   \`\`\`
 
 10. **Use MCP Effectively**
    - Use Snapshot Mode (default) for most interactions

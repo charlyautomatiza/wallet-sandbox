@@ -4,7 +4,7 @@
 
 Configure Playwright to ensure test isolation:
 
-```typescript
+\`\`\`typescript
 // playwright.config.ts
 import { defineConfig } from '@playwright/test';
 
@@ -24,13 +24,13 @@ export default defineConfig({
     }
   }
 });
-```
+\`\`\`
 
 ## Playwright Config File
 
 Use a well-structured playwright.config.ts file:
 
-```typescript
+\`\`\`typescript
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
@@ -73,13 +73,13 @@ export default defineConfig({
     },
   ],
 });
-```
+\`\`\`
 
 ## Fixtures
 
 Create custom fixtures for common test setups:
 
-```typescript
+\`\`\`typescript
 // fixtures.ts
 import { test as base } from '@playwright/test';
 import { LoginPage } from './pages/LoginPage';
@@ -103,13 +103,13 @@ export const test = base.extend({
 });
 
 export { expect } from '@playwright/test';
-```
+\`\`\`
 
 ## Test Data Management
 
 Handle test data efficiently:
 
-```typescript
+\`\`\`typescript
 // testData.ts
 export const users = {
   admin: {
@@ -138,13 +138,13 @@ test('admin can view all orders', async ({ page, loginPage }) => {
   await loginPage.login(users.admin.email, users.admin.password);
   // Test continues...
 });
-```
+\`\`\`
 
 ## Visual Testing
 
 Implement visual testing for UI components:
 
-```typescript
+\`\`\`typescript
 import { test, expect } from '@playwright/test';
 
 test('component visual regression test', async ({ page }) => {
@@ -154,13 +154,13 @@ test('component visual regression test', async ({ page }) => {
   await expect(page.getByTestId('button-primary')).toHaveScreenshot('button-primary.png');
   await expect(page.getByTestId('dropdown-menu')).toHaveScreenshot('dropdown-menu.png');
 });
-```
+\`\`\`
 
 ## Parallel Testing
 
 Configure tests to run in parallel:
 
-```typescript
+\`\`\`typescript
 // Make tests independent with isolated storage states
 test.describe('User profile tests', () => {
   // Use separate user accounts for each test
@@ -172,13 +172,13 @@ test.describe('User profile tests', () => {
     // Test with different unique user data
   });
 });
-```
+\`\`\`
 
 ## CI Integration
 
 Set up Playwright for continuous integration:
 
-```yaml
+\`\`\`yaml
 # .github/workflows/playwright.yml
 name: Playwright Tests
 on:
@@ -208,13 +208,13 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
-```
+\`\`\`
 
 ## Performance Testing
 
 Include basic performance metrics in tests:
 
-```typescript
+\`\`\`typescript
 test('page loads within acceptable time', async ({ page }) => {
   const startTime = Date.now();
   
@@ -227,4 +227,4 @@ test('page loads within acceptable time', async ({ page }) => {
   const performanceMetrics = await page.evaluate(() => JSON.stringify(window.performance));
   console.log(`Performance metrics: ${performanceMetrics}`);
 });
-```
+\`\`\`

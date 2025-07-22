@@ -15,7 +15,7 @@ Wallet Sandbox is a digital wallet application that allows users to manage their
 
 ## Project Structure
 
-```
+\`\`\`
 app/                    # Next.js App (App Router)
 ├── (auth)/             # Authenticated routes
 ├── layout.tsx          # Main layout
@@ -31,7 +31,7 @@ tests/                  # Automated tests
 ├── fixtures/           # Test fixtures
 ├── pages/              # Page Object Models
 └── specs/              # Test specifications
-```
+\`\`\`
 
 ## Standards and Documentation
 
@@ -62,25 +62,25 @@ The project follows strict development and testing standards. Check these resour
 ## Development Environment Setup
 
 1. **Install dependencies**:
-   ```bash
+   \`\`\`bash
    npm install
    # or
    pnpm install
-   ```
+   \`\`\`
 
 2. **Start the development server**:
-   ```bash
+   \`\`\`bash
    npm run dev
    # or
    pnpm dev
-   ```
+   \`\`\`
 
 3. **Run tests**:
-   ```bash
+   \`\`\`bash
    npm run test
    # or
    pnpm test
-   ```
+   \`\`\`
 
 ## Deployment
 

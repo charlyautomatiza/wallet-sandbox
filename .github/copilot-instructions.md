@@ -50,11 +50,11 @@ ALWAYS complete this step FIRST before discussing any technical details or sugge
    - Help the user create a new task in GitHub Issues with:
      - Appropriate title following the [US/TT/BG-XXX] format
      - Description using the standard User Story format:
-     ```
+     \`\`\`
      As a [role]
      I want [capability]
      So that [benefit]
-     ```
+     \`\`\`
      - Suggested acceptance criteria
    - Require the user to confirm the new task ID has been created before proceeding
 
@@ -66,19 +66,19 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
 
 1. **Start from updated main**:
    - CONFIRM with the user that they have executed:
-   ```bash
+   \`\`\`bash
    git checkout main
    git pull origin main
-   ```
+   \`\`\`
    - If not confirmed, DO NOT PROCEED until this step is completed.
 
 2. **Create working branch**:
    - CONFIRM the branch name follows the format: `type/US-XXX-short-description`
    - Valid types: feature, bugfix, hotfix, refactor, chore
    - Example:
-   ```bash
+   \`\`\`bash
    git checkout -b feature/US-201-savings-goals
-   ```
+   \`\`\`
    - VERIFY the current branch matches this pattern before proceeding
    - If branch doesn't exist or doesn't follow the pattern, STOP and require its creation
 
@@ -88,17 +88,17 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
 
 4. **Commit guidance**:
    - Require message format: `[US-XXX] Concise description`
-   ```bash
+   \`\`\`bash
    git add .
    git commit -m "[US-201] Implement savings goals creation"
-   ```
+   \`\`\`
 
 5. **Review and Publication**:
    - Ask for user confirmation before publishing changes
    - Verify that the changes meet expectations
-   ```bash
+   \`\`\`bash
    git push origin feature/US-201-savings-goals
-   ```
+   \`\`\`
 
 6. **Pull Request**:
    - Help create PR with appropriate title and description
@@ -114,7 +114,7 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
 ### Next.js 15 App Router
 
 - **Always** use App Router with the following practices:
-  ```typescript
+  \`\`\`typescript
   // Dynamic routes - ALWAYS await params
   export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -135,10 +135,10 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
       return { success: false, error: 'User-friendly error message' }
     }
   }
-  ```
+  \`\`\`
 
 - **Client Components** - Use only when necessary:
-  ```typescript
+  \`\`\`typescript
   'use client'
   
   import { useActionState } from 'react'
@@ -147,7 +147,7 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
     const [state, formAction, isPending] = useActionState(serverAction, null)
     // Component logic
   }
-  ```
+  \`\`\`
 
 ## Test Automation
 
@@ -173,7 +173,7 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
 ### TypeScript
 
 - **Strict typing**:
-  ```typescript
+  \`\`\`typescript
   // Define appropriate interfaces
   interface TransferData {
     amount: number
@@ -185,12 +185,12 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
   const handleTransfer = (data: TransferData): Promise<ApiResponse<Transfer>> => {
     // Implementation
   }
-  ```
+  \`\`\`
 
 ### Components
 
 - **Component Structure**:
-  ```typescript
+  \`\`\`typescript
   'use client' // Only when necessary
   
   interface ComponentProps {
@@ -237,7 +237,7 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
       </Card>
     )
   }
-  ```
+  \`\`\`
 
 ## Test Structure and Naming
 
@@ -247,7 +247,7 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
    - Use action-oriented descriptions
 
 2. **Structure using the AAA pattern** (Arrange-Act-Assert):
-   ```typescript
+   \`\`\`typescript
    test('user can add item to cart', async ({ page }) => {
      // Arrange
      await page.goto('/products');
@@ -258,35 +258,35 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
      // Assert
      await expect(page.getByText('Item added')).toBeVisible();
    });
-   ```
+   \`\`\`
 
 ## Locators and Selectors
 
 1. **Prioritize role-based locators**:
-   ```typescript
+   \`\`\`typescript
    // Good
    await page.getByRole('button', { name: 'Submit' }).click();
    
    // Avoid
    await page.locator('#submit-button').click();
-   ```
+   \`\`\`
 
 2. **Use data-testid for complex UI elements**:
-   ```typescript
+   \`\`\`typescript
    await page.getByTestId('transfer-form').fill('100');
-   ```
+   \`\`\`
 
 ## Assertions and Error Handling
 
 1. **Use auto-waiting assertions**:
-   ```typescript
+   \`\`\`typescript
    // Good - Uses auto-waiting
    await expect(page.getByText('Success')).toBeVisible();
    
    // Avoid
    await page.waitForTimeout(1000);
    expect(await page.getByText('Success').isVisible()).toBeTruthy();
-   ```
+   \`\`\`
 
 2. **Include appropriate error handling**:
    - Add proper error messages in assertions
@@ -295,7 +295,7 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
 ## API Testing and Mocking
 
 1. **Mock API responses when needed**:
-   ```typescript
+   \`\`\`typescript
    await page.route('**/api/account/balance', (route) => {
      route.fulfill({
        status: 200,
@@ -303,10 +303,10 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
        body: JSON.stringify({ balance: 5000 })
      });
    });
-   ```
+   \`\`\`
 
 2. **Use standardized error responses**:
-   ```typescript
+   \`\`\`typescript
    await page.route('**/api/validate-recipient', (route) => {
      route.fulfill({
        status: 404,
@@ -320,17 +320,17 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
        })
      });
    });
-   ```
+   \`\`\`
 
 ## Mobile Testing
 
 1. **Prioritize mobile viewports**:
-   ```typescript
+   \`\`\`typescript
    test.beforeEach(async ({ page }) => {
      // Set mobile viewport
      await page.setViewportSize({ width: 375, height: 667 });
    });
-   ```
+   \`\`\`
 
 2. **Test responsive elements**:
    - Verify that UI elements adapt correctly to different screen sizes
@@ -340,7 +340,7 @@ AFTER verifying the task ID and BEFORE any code changes, verify and ensure the f
 
 Use data-driven patterns for testing similar flows with different inputs:
 
-```typescript
+\`\`\`typescript
 const transferScenarios = [
   { recipient: 'John Doe', amount: 100, expectSuccess: true },
   { recipient: 'Jane Smith', amount: 50000, expectSuccess: false }
@@ -351,12 +351,12 @@ for (const scenario of transferScenarios) {
     // Test implementation using scenario data
   });
 }
-```
+\`\`\`
 
 ## Project Structure
 
 Follow this directory structure for tests:
-```
+\`\`\`
 tests/
 ├── fixtures/           # Common test fixtures
 ├── pages/              # Page Object Models
@@ -369,4 +369,4 @@ tests/
     ├── auth/           # Authentication tests
     ├── transfer/       # Money transfer tests
     └── ...
-```
+\`\`\`

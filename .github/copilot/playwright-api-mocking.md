@@ -13,7 +13,7 @@ API mocking is essential for testing applications without relying on real backen
 
 Use Playwright's `page.route()` method to intercept and modify network requests:
 
-```typescript
+\`\`\`typescript
 // Mock an API response
 test('display user profile', async ({ page }) => {
   await page.route('**/api/user/profile', (route) => {
@@ -31,7 +31,7 @@ test('display user profile', async ({ page }) => {
   await page.goto('/profile');
   await expect(page.getByText('Test User')).toBeVisible();
 });
-```
+\`\`\`
 
 ## Structure for Route Mocks
 
@@ -39,7 +39,7 @@ test('display user profile', async ({ page }) => {
 
 For reusable API mocks, create a fixture:
 
-```typescript
+\`\`\`typescript
 // fixtures.ts
 import { test as base } from '@playwright/test';
 
@@ -85,11 +85,11 @@ export const test = base.extend<{ mockedApis: MockedAPIs }>({
 });
 
 export { expect } from '@playwright/test';
-```
+\`\`\`
 
 ### Using Mock Fixtures in Tests
 
-```typescript
+\`\`\`typescript
 // transfer.spec.ts
 import { test, expect } from '../fixtures';
 
@@ -105,13 +105,13 @@ test('user can see account balance', async ({ page, mockedApis }) => {
   await expect(page.getByText('$5,000.00')).toBeVisible();
   await expect(page.getByText('John Doe')).toBeVisible();
 });
-```
+\`\`\`
 
 ## Mock API Response Files
 
 For complex or large API responses, store mock data in JSON files:
 
-```typescript
+\`\`\`typescript
 // fixtures/mockData/userProfile.json
 {
   "name": "Test User",
@@ -149,13 +149,13 @@ test('display user details', async ({ page }) => {
   await page.goto('/profile');
   // Test assertions
 });
-```
+\`\`\`
 
 ## Testing Different Response Scenarios
 
 Mock different API responses to test various scenarios:
 
-```typescript
+\`\`\`typescript
 test('handle error response', async ({ page }) => {
   // Mock error response
   await page.route('**/api/transfer', (route) => {
@@ -188,13 +188,13 @@ test('handle network timeout', async ({ page }) => {
   // Wait for timeout error UI
   await expect(page.getByText('Request timed out')).toBeVisible({ timeout: 10000 });
 });
-```
+\`\`\`
 
 ## Dynamic Response Based on Request
 
 Create mocks that respond differently based on the request:
 
-```typescript
+\`\`\`typescript
 test('search functionality', async ({ page }) => {
   await page.route('**/api/search**', async (route) => {
     const url = route.request().url();
@@ -230,13 +230,13 @@ test('search functionality', async ({ page }) => {
   await page.getByRole('button', { name: 'Search' }).click();
   await expect(page.getByText('No results found')).toBeVisible();
 });
-```
+\`\`\`
 
 ## Request Validation
 
 Validate API request payloads:
 
-```typescript
+\`\`\`typescript
 test('transfer form sends correct data', async ({ page }) => {
   // Store request data for validation
   let requestData = null;
@@ -266,13 +266,13 @@ test('transfer form sends correct data', async ({ page }) => {
     note: 'Test payment'
   });
 });
-```
+\`\`\`
 
 ## API Mocking for Test Isolation
 
 Using API mocking is essential for creating independent, self-contained tests:
 
-```typescript
+\`\`\`typescript
 test('user can edit their profile', async ({ page }) => {
   // Mock the API to always return a specific user, regardless of database state
   await page.route('**/api/users/me', (route) => {
@@ -305,13 +305,13 @@ test('user can edit their profile', async ({ page }) => {
   
   // Test continues with user actions...
 });
-```
+\`\`\`
 
 ## Using API Mocks for Self-Contained Tests
 
 To ensure tests are fully independent, mock all external dependencies:
 
-```typescript
+\`\`\`typescript
 test('user can view order history', async ({ page }) => {
   // Mock authentication API
   await page.route('**/api/auth/login', (route) => {
@@ -346,27 +346,27 @@ test('user can view order history', async ({ page }) => {
   
   // Test continues with user login and actions...
 });
-```
+\`\`\`
 
 ## Best Practices for API Mocking
 
 1. **Use Specific URL Patterns**: Target specific APIs rather than broad patterns
-   ```typescript
+   \`\`\`typescript
    // Good
    await page.route('**/api/users/123', handler);
    
    // Avoid
    await page.route('**/*', handler); // Too broad
-   ```
+   \`\`\`
 
 2. **Mock Only Necessary APIs**: Only mock APIs that your test requires
-   ```typescript
+   \`\`\`typescript
    // Only mock what you need for the current test
    await page.route('**/api/account/balance', balanceHandler);
-   ```
+   \`\`\`
 
 3. **Organize Mock Data**: Keep mock data organized and reusable
-   ```typescript
+   \`\`\`typescript
    // Create mock data factories
    function createUserMock(overrides = {}) {
      return {
@@ -376,10 +376,10 @@ test('user can view order history', async ({ page }) => {
        ...overrides
      };
    }
-   ```
+   \`\`\`
 
 4. **Test Edge Cases**: Use API mocking to test error handling and edge cases
-   ```typescript
+   \`\`\`typescript
    // Test empty responses, error states, and boundary conditions
    test('handle empty response', async ({ page }) => {
      await page.route('**/api/users', (route) => {
@@ -393,10 +393,10 @@ test('user can view order history', async ({ page }) => {
      await page.goto('/users');
      await expect(page.getByText('No users found')).toBeVisible();
    });
-   ```
+   \`\`\`
 
 5. **Clean Up Routes**: For complex tests with multiple route handlers, clean up routes when done
-   ```typescript
+   \`\`\`typescript
    test('complex test with multiple mocks', async ({ page }) => {
      await page.route('**/api/resource1', handler1);
      await page.route('**/api/resource2', handler2);
@@ -407,4 +407,4 @@ test('user can view order history', async ({ page }) => {
      await page.unroute('**/api/resource1');
      await page.unroute('**/api/resource2');
    });
-   ```
+   \`\`\`

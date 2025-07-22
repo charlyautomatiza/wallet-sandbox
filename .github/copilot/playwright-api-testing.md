@@ -9,7 +9,7 @@
 
 ## API Request Handling
 
-```typescript
+\`\`\`typescript
 import { test, expect } from '@playwright/test';
 
 test('API should return user data', async ({ request }) => {
@@ -20,11 +20,11 @@ test('API should return user data', async ({ request }) => {
   expect(data.name).toBe('John Doe');
   expect(data.email).toContain('@example.com');
 });
-```
+\`\`\`
 
 ## API Authentication
 
-```typescript
+\`\`\`typescript
 import { test as base, expect } from '@playwright/test';
 
 // Create a fixture for authenticated requests
@@ -55,13 +55,13 @@ test('fetch protected resource', async ({ authenticatedRequest }) => {
   const response = await authenticatedRequest.get('/api/protected-resource');
   expect(response.status()).toBe(200);
 });
-```
+\`\`\`
 
 ## API Response Validation
 
 Use strong typing for API responses:
 
-```typescript
+\`\`\`typescript
 interface UserResponse {
   id: number;
   name: string;
@@ -79,13 +79,13 @@ test('API should return correctly typed user data', async ({ request }) => {
   expect(typeof data.email).toBe('string');
   expect(data.email).toMatch(/@.+\..+/); // Basic email format validation
 });
-```
+\`\`\`
 
 ## Mock API Responses
 
 For frontend tests, mock API responses to isolate the UI:
 
-```typescript
+\`\`\`typescript
 test('shows user profile with mocked API data', async ({ page }) => {
   // Mock the API response
   await page.route('**/api/users/*', (route) => {
@@ -107,13 +107,13 @@ test('shows user profile with mocked API data', async ({ page }) => {
   await expect(page.getByText('Test User')).toBeVisible();
   await expect(page.getByText('test@example.com')).toBeVisible();
 });
-```
+\`\`\`
 
 ## API Error Handling
 
 Test API error scenarios:
 
-```typescript
+\`\`\`typescript
 test('handle API error gracefully', async ({ page }) => {
   // Mock API error response
   await page.route('**/api/users/*', (route) => {
@@ -131,4 +131,4 @@ test('handle API error gracefully', async ({ page }) => {
   await expect(page.getByText('Something went wrong')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
 });
-```
+\`\`\`

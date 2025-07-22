@@ -24,17 +24,17 @@ All code modifications must be associated with a backlog item:
 ### 2. Git Workflow
 
 1. **Base Branch**: Always start from an updated `main` branch
-   ```bash
+   \`\`\`bash
    git checkout main
    git pull origin main
-   ```
+   \`\`\`
 
 2. **Working Branch Creation**:
    - Name following the pattern: `type/US-XXX-brief-description`
    - Types: `feature`, `bugfix`, `hotfix`, `refactor`, `chore`
-   ```bash
+   \`\`\`bash
    git checkout -b feature/US-201-savings-goals
-   ```
+   \`\`\`
 
 3. **Commits**:
    - Use descriptive messages that reference the US/TT/BG

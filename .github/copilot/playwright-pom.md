@@ -12,7 +12,7 @@
 
 ## Sample Page Object
 
-```typescript
+\`\`\`typescript
 // File: tests/pages/LoginPage.ts
 import { Page } from '@playwright/test';
 
@@ -49,11 +49,11 @@ export class LoginPage {
     return await this.errorMessage.textContent();
   }
 }
-```
+\`\`\`
 
 ## Using Page Objects in Tests
 
-```typescript
+\`\`\`typescript
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 
@@ -73,13 +73,13 @@ test('invalid credentials show error', async ({ page }) => {
   expect(await loginPage.isErrorVisible()).toBeTruthy();
   expect(await loginPage.getErrorText()).toContain('Invalid credentials');
 });
-```
+\`\`\`
 
 ## Component Objects
 
 For reusable UI components, create component objects:
 
-```typescript
+\`\`\`typescript
 // HeaderComponent.ts
 import { Page, Locator } from '@playwright/test';
 
@@ -101,4 +101,4 @@ export class HeaderComponent {
     await this.profileMenu.click();
   }
 }
-```
+\`\`\`

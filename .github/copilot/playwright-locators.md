@@ -13,7 +13,7 @@
 
 Prefer role-based locators for better accessibility and test reliability:
 
-```typescript
+\`\`\`typescript
 // Preferred
 await page.getByRole('button', { name: 'Submit' }).click();
 await page.getByRole('textbox', { name: 'Email' }).fill('user@example.com');
@@ -21,38 +21,38 @@ await page.getByRole('textbox', { name: 'Email' }).fill('user@example.com');
 // Avoid
 await page.locator('#submit-button').click();
 await page.locator('input[type="email"]').fill('user@example.com');
-```
+\`\`\`
 
 ## Test IDs
 
 When role-based locators aren't sufficient, use data-testid attributes:
 
-```typescript
+\`\`\`typescript
 // In your HTML/JSX
 <button data-testid="submit-button">Submit</button>
 
 // In your test
 await page.getByTestId('submit-button').click();
-```
+\`\`\`
 
 ## Text Content
 
 Use text content for elements that don't have roles or test IDs:
 
-```typescript
+\`\`\`typescript
 await page.getByText('Welcome to our platform').isVisible();
 await page.getByText('Error message').isVisible();
-```
+\`\`\`
 
 ## Locator Chaining
 
 Chain locators to narrow down the scope:
 
-```typescript
+\`\`\`typescript
 const form = page.getByRole('form');
 await form.getByRole('textbox', { name: 'Email' }).fill('user@example.com');
 await form.getByRole('button', { name: 'Submit' }).click();
-```
+\`\`\`
 
 ## Avoiding Brittle Selectors
 
