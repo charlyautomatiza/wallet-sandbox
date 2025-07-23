@@ -11,10 +11,25 @@ interface Contact {
   }>
 }
 
+interface ScheduledTransfer {
+  id: string
+  contactId: string
+  contactName: string
+  amount: number
+  reason: string
+  comment?: string
+  scheduledDate: string // ISO format
+  frequency: 'once' | 'daily' | 'weekly' | 'monthly'
+  active: boolean
+  createdAt: string
+  nextExecution?: string
+}
+
 interface TransferState {
   contacts: Contact[]
   selectedContact: Contact | null
   amount: number
+  scheduledTransfers: ScheduledTransfer[]
 }
 
 const initialState: TransferState = {
@@ -137,6 +152,35 @@ const initialState: TransferState = {
   ],
   selectedContact: null,
   amount: 0,
+  scheduledTransfers: [
+    // Ejemplo de transferencias programadas para demostración
+    {
+      id: "sched_1",
+      contactId: "1",
+      contactName: "Elyer Saitest",
+      amount: 25000,
+      reason: "Pago mensual",
+      comment: "Alquiler apartamento",
+      scheduledDate: "2025-07-30T10:00:00.000Z",
+      frequency: "monthly",
+      active: true,
+      createdAt: "2025-07-23T12:00:00.000Z",
+      nextExecution: "2025-07-30T10:00:00.000Z"
+    },
+    {
+      id: "sched_2", 
+      contactId: "3",
+      contactName: "María González",
+      amount: 10000,
+      reason: "Gastos compartidos",
+      comment: "Servicios del hogar",
+      scheduledDate: "2025-07-25T14:00:00.000Z",
+      frequency: "weekly",
+      active: true,
+      createdAt: "2025-07-22T15:30:00.000Z",
+      nextExecution: "2025-07-25T14:00:00.000Z"
+    }
+  ],
 }
 
 export const transferSlice = createSlice({
@@ -149,8 +193,39 @@ export const transferSlice = createSlice({
     setAmount: (state, action: PayloadAction<number>) => {
       state.amount = action.payload
     },
+    addScheduledTransfer: (state, action: PayloadAction<ScheduledTransfer>) => {
+      state.scheduledTransfers.push(action.payload)
+    },
+    updateScheduledTransfer: (state, action: PayloadAction<{ id: string; updates: Partial<ScheduledTransfer> }>) => {
+      const { id, updates } = action.payload
+      const index = state.scheduledTransfers.findIndex(transfer => transfer.id === id)
+      if (index !== -1) {
+        state.scheduledTransfers[index] = { ...state.scheduledTransfers[index], ...updates }
+      }
+    },
+    cancelScheduledTransfer: (state, action: PayloadAction<string>) => {
+      const id = action.payload
+      const index = state.scheduledTransfers.findIndex(transfer => transfer.id === id)
+      if (index !== -1) {
+        state.scheduledTransfers[index].active = false
+      }
+    },
+    removeScheduledTransfer: (state, action: PayloadAction<string>) => {
+      const id = action.payload
+      state.scheduledTransfers = state.scheduledTransfers.filter(transfer => transfer.id !== id)
+    },
   },
 })
 
-export const { setSelectedContact, setAmount } = transferSlice.actions
+export const { 
+  setSelectedContact, 
+  setAmount,
+  addScheduledTransfer,
+  updateScheduledTransfer,
+  cancelScheduledTransfer,
+  removeScheduledTransfer
+} = transferSlice.actions
 export const transferReducer = transferSlice.reducer
+
+// Export types for use in components
+export type { ScheduledTransfer, Contact }
