@@ -14,6 +14,8 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
+  Calendar,
+  Clock,
 } from "lucide-react"
 import type { RootState } from "@/store/store"
 import Image from "next/image"
@@ -41,6 +43,33 @@ export default function Home() {
   const [currentCard, setCurrentCard] = useState(0)
   const user = useSelector((state: RootState) => state.auth.user)
   const account = useSelector((state: RootState) => state.account)
+  const scheduledTransfers = useSelector((state: RootState) => state.transfer.scheduledTransfers)
+  
+  // Get upcoming transfers (next 7 days)
+  const getUpcomingTransfers = () => {
+    const now = new Date()
+    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+    
+    return scheduledTransfers
+      .filter(transfer => transfer.active)
+      .filter(transfer => {
+        const scheduledDate = new Date(transfer.scheduledDate)
+        return scheduledDate <= nextWeek && scheduledDate > now
+      })
+      .slice(0, 2) // Show only first 2 upcoming transfers
+  }
+
+  const upcomingTransfers = getUpcomingTransfers()
+
+  const formatFrequency = (frequency: string) => {
+    switch (frequency) {
+      case 'once': return 'Una vez'
+      case 'daily': return 'Diario'
+      case 'weekly': return 'Semanal'  
+      case 'monthly': return 'Mensual'
+      default: return frequency
+    }
+  }
 
   const nextCard = () => {
     setCurrentCard((prev) => (prev + 1) % cards.length)
@@ -116,6 +145,75 @@ export default function Home() {
             </Link>
           </div>
 
+          {/* Upcoming Scheduled Transfers */}
+          {upcomingTransfers.length > 0 && (
+            <div className="mb-8" data-testid="upcoming-transfers-section">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-700" data-testid="upcoming-transfers-title">
+                  Próximas transferencias
+                </h2>
+                <Link 
+                  href="/transfer/scheduled"
+                  className="text-blue-600 text-sm font-medium"
+                  data-testid="view-all-scheduled-link"
+                >
+                  Ver todas
+                </Link>
+              </div>
+              <div className="space-y-3" data-testid="upcoming-transfers-list">
+                {upcomingTransfers.map((transfer) => {
+                  const scheduledDate = new Date(transfer.scheduledDate)
+                  const isToday = scheduledDate.toDateString() === new Date().toDateString()
+                  const isTomorrow = scheduledDate.toDateString() === new Date(Date.now() + 24 * 60 * 60 * 1000).toDateString()
+                  
+                  return (
+                    <div 
+                      key={transfer.id}
+                      className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+                      data-testid={`upcoming-transfer-${transfer.id}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-1">
+                            <Calendar className="h-4 w-4 text-blue-600 mr-2" />
+                            <span className="font-semibold text-gray-900">{transfer.contactName}</span>
+                            {isToday && (
+                              <span className="ml-2 px-2 py-1 bg-red-600 text-white text-xs rounded-full">
+                                Hoy
+                              </span>
+                            )}
+                            {isTomorrow && (
+                              <span className="ml-2 px-2 py-1 bg-orange-600 text-white text-xs rounded-full">
+                                Mañana
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold text-green-600">
+                              ${transfer.amount.toLocaleString()}
+                            </span>
+                            <div className="text-right">
+                              <div className="text-sm text-gray-600">
+                                {scheduledDate.toLocaleDateString('es-ES', {
+                                  day: '2-digit',
+                                  month: '2-digit'
+                                })}
+                              </div>
+                              <div className="flex items-center text-xs text-gray-500">
+                                <Clock className="h-3 w-3 mr-1" />
+                                {formatFrequency(transfer.frequency)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Features Grid */}
           <div className="grid grid-cols-4 gap-4 mb-8" data-testid="features-grid">
             <Link href="/business" className="flex flex-col items-center space-y-2" data-testid="business-link">
@@ -179,9 +277,9 @@ export default function Home() {
 
               {/* Card Indicators */}
               <div className="flex justify-center space-x-2 mt-4">
-                {cards.map((_, index) => (
+                {cards.map((card, index) => (
                   <div
-                    key={index}
+                    key={card.id}
                     className={`w-2 h-2 rounded-full ${index === currentCard ? "bg-blue-600" : "bg-gray-300"}`}
                   />
                 ))}
